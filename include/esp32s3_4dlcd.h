@@ -38,7 +38,6 @@
 #include "esp_lcd_io_spi.h"
 #include "esp_check.h"
 #include "driver/ledc.h"
-#include "driver/spi_master.h"
 
 #if defined(CONFIG_LCD_INTERFACE_RGB)
 #include "4dlcd_rgb.h" // TODO
@@ -159,13 +158,12 @@ esp_err_t backlight_init(void);
 esp_err_t backlight_set(uint8_t brightness);
 
 /**
- * @brief Bring up SPI/QSPI bus + panel IO + panel + backlight in one call.
+ * @brief Bring up SPI/QSPI or RGB bus + panel IO + panel + backlight in one call.
  *
- * @param[in]  spi_host   SPI host to use (e.g. SPI2_HOST). Caller owns bus lifetime/sharing.
  * @param[out] ret_panel  Returned LCD panel handle, ready for esp_lcd_panel_draw_bitmap()
  * @return esp_err_t
  */
-esp_err_t esp32s3_4dlcd_full_init(spi_host_device_t spi_host, esp_lcd_panel_handle_t *ret_panel);
+esp_err_t esp32s3_4dlcd_full_init(esp_lcd_panel_handle_t *ret_panel);
 
 #ifdef __cplusplus
 }

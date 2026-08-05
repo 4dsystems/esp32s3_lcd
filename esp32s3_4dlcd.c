@@ -509,7 +509,7 @@ esp_err_t backlight_set(uint8_t brightness)
     return ESP_OK;
 }
 
-esp_err_t esp32s3_4dlcd_full_init(spi_host_device_t spi_host, esp_lcd_panel_handle_t *ret_panel)
+esp_err_t esp32s3_4dlcd_full_init(esp_lcd_panel_handle_t *ret_panel)
 {
     esp_err_t ret = ESP_OK;
     esp_lcd_panel_io_handle_t io_handle = NULL;
@@ -520,10 +520,10 @@ esp_err_t esp32s3_4dlcd_full_init(spi_host_device_t spi_host, esp_lcd_panel_hand
     // Caller is responsible for the SPI host not already being initialized elsewhere;
     // this component does not track bus ownership across displays/peripherals.
     spi_bus_config_t buscfg = ESP32S3_4DLCD_BUS_SPI_CONFIG(LCD_WIDTH * 80 * sizeof(uint16_t));
-    ESP_RETURN_ON_ERROR(spi_bus_initialize(spi_host, &buscfg, SPI_DMA_CH_AUTO), TAG, "spi bus init failed");
+    ESP_RETURN_ON_ERROR(spi_bus_initialize(LCD_HOST, &buscfg, SPI_DMA_CH_AUTO), TAG, "spi bus init failed");
 
     esp_lcd_panel_io_spi_config_t io_config = ESP32S3_4DLCD_IO_SPI_CONFIG(NULL, NULL);
-    ESP_GOTO_ON_ERROR(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)spi_host, &io_config, &io_handle),
+    ESP_GOTO_ON_ERROR(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)LCD_HOST, &io_config, &io_handle),
                        err, TAG, "panel io create failed");
 
     ESP_GOTO_ON_ERROR(esp_lcd_new_esp32s3_4dlcd(io_handle, &panel_handle), err, TAG, "panel create failed");
@@ -544,6 +544,6 @@ err:
     if (io_handle) {
         esp_lcd_panel_io_del(io_handle);
     }
-    spi_bus_free(spi_host);
+    spi_bus_free(LCD_HOST);
     return ret;
 }

@@ -59,6 +59,22 @@ config ESP32S3_4DLCD_43Q
 
 endchoice
 
+choice
+    prompt "Select your SPI host to use with the LCD"
+    depends on ESP32S3_4DLCD_24 || ESP32S3_4DLCD_28 || ESP32S3_4DLCD_32 || ESP32S3_4DLCD_35 || ESP32S3_4DLCD_43Q
+
+config ESP32S3_4DLCD_SPI2
+    bool "SPI2"
+    help
+      Select this if you wish to use SPI2 with the SPI/QSPI LCD
+
+config ESP32S3_4DLCD_SPI3
+    bool "SPI3"
+    help
+      Select this if you wish to use SPI3 with the SPI/QSPI LCD
+endchoice
+
+
 config LCD_INTERFACE_SPI
     bool
     default n
