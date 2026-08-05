@@ -9,10 +9,10 @@ Implementation of the LCD controller with esp_lcd component for 4D Systems' ESP3
 | [gen4-ESP32-32 Series](https://resources.4dsystems.com.au/datasheets/esp32/gen4-esp32/)       | ✅       | [ILI9341](https://4dsystems.com.au/download/31395/) | SPI       | [Datasheet](https://resources.4dsystems.com.au/datasheets/4dlcd/4DLCD-32320240/)     |
 | [gen4-ESP32-35 Series](https://resources.4dsystems.com.au/datasheets/esp32/gen4-esp32/)       | ✅       | [ILI9488](https://4dsystems.com.au/download/31399/) | SPI       | [Datasheet](https://resources.4dsystems.com.au/datasheets/4dlcd/4DLCD-35480320-IPS/) |
 | [gen4-ESP32Q-43 Series](https://resources.4dsystems.com.au/datasheets/esp32/gen4-esp32Q-43/)  | ✅       | [NV3041A](https://4dsystems.com.au/download/31400/) | QSPI      | Not available         |
-| [gen4-ESP32-43 Series](https://resources.4dsystems.com.au/datasheets/esp32/gen4-esp32-RGB/)   | ❌       |                                                     | RGB       | [Datasheet](https://resources.4dsystems.com.au/datasheets/4dlcd/4DLCD-43480272-IPS/) |
-| [gen4-ESP32-50 Series](https://resources.4dsystems.com.au/datasheets/esp32/gen4-esp32-RGB/)   | ❌       |                                                     | RGB       | [Datasheet](https://resources.4dsystems.com.au/datasheets/4dlcd/4DLCD-50800480-IPS/) |
-| [gen4-ESP32-70 Series](https://resources.4dsystems.com.au/datasheets/esp32/gen4-esp32-RGB/)   | ❌       |                                                     | RGB       | [Datasheet](https://resources.4dsystems.com.au/datasheets/4dlcd/4DLCD-70800480/) |
-| [ESP32-90 Series](https://resources.4dsystems.com.au/datasheets/esp32/esp32-90/)              | ❌       |                                                     | RGB       | [Datasheet](https://resources.4dsystems.com.au/datasheets/4dlcd/4DLCD-90800480/) |
+| [gen4-ESP32-43 Series](https://resources.4dsystems.com.au/datasheets/esp32/gen4-esp32-RGB/)   | ✅       |                                                     | RGB       | [Datasheet](https://resources.4dsystems.com.au/datasheets/4dlcd/4DLCD-43480272-IPS/) |
+| [gen4-ESP32-50 Series](https://resources.4dsystems.com.au/datasheets/esp32/gen4-esp32-RGB/)   | ✅       |                                                     | RGB       | [Datasheet](https://resources.4dsystems.com.au/datasheets/4dlcd/4DLCD-50800480-IPS/) |
+| [gen4-ESP32-70 Series](https://resources.4dsystems.com.au/datasheets/esp32/gen4-esp32-RGB/)   | ✅       |                                                     | RGB       | [Datasheet](https://resources.4dsystems.com.au/datasheets/4dlcd/4DLCD-70800480/) |
+| [ESP32-90 Series](https://resources.4dsystems.com.au/datasheets/esp32/esp32-90/)              | ✅       |                                                     | RGB       | [Datasheet](https://resources.4dsystems.com.au/datasheets/4dlcd/4DLCD-90800480/) |
 
 ## Add to project
 
@@ -27,6 +27,16 @@ dependencies:
   # Define a dependency from a Git repository
   esp32s3_4dlcd:
     git: https://github.com/4dsystems/esp32s3_4dlcd.git
+```
+
+Add `version` to indicate which branch or tag to use:
+
+``` yml
+dependencies:
+  # Define a dependency from a Git repository
+  esp32s3_4dlcd:
+    git: https://github.com/4dsystems/esp32s3_4dlcd.git
+    version: test # define the branch/tag
 ```
 
 ## Selecting the Display Series

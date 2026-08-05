@@ -33,29 +33,29 @@ config ESP32S3_4DLCD_43Q
     help
       Select this if your 4D display is 4.3-inch QSPI (480x272)
 
-# config ESP32S3_4DLCD_43
-#     bool "gen4-ESP32-43 Series"
-#     select LCD_INTERFACE_RGB
-#     help
-#       Select this if your 4D display is 4.3-inch RGB (800x480)
+config ESP32S3_4DLCD_43
+    bool "gen4-ESP32-43 Series"
+    select LCD_INTERFACE_RGB
+    help
+      Select this if your 4D display is 4.3-inch RGB (800x480)
 
-# config ESP32S3_4DLCD_50
-#     bool "gen4-ESP32-50 Series"
-#     select LCD_INTERFACE_RGB
-#     help
-#       Select this if your 4D display is 5-inch
+config ESP32S3_4DLCD_50
+    bool "gen4-ESP32-50 Series"
+    select LCD_INTERFACE_RGB
+    help
+      Select this if your 4D display is 5-inch
 
-# config ESP32S3_4DLCD_70
-#     bool "gen4-ESP32-70 Series"
-#     select LCD_INTERFACE_RGB
-#     help
-#       Select this if your 4D display is 7-inch
+config ESP32S3_4DLCD_70
+    bool "gen4-ESP32-70 Series"
+    select LCD_INTERFACE_RGB
+    help
+      Select this if your 4D display is 7-inch
 
-# config ESP32S3_4DLCD_90
-#     bool "ESP32-90 Series"
-#     select LCD_INTERFACE_RGB
-#     help
-#       Select this if your 4D display is 9-inch
+config ESP32S3_4DLCD_90
+    bool "ESP32-90 Series"
+    select LCD_INTERFACE_RGB
+    help
+      Select this if your 4D display is 9-inch
 
 endchoice
 

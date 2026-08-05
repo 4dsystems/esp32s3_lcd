@@ -25,6 +25,8 @@
 
 static const char *TAG = "esp32s3_4dlcd";
 
+#if !defined(CONFIG_LCD_INTERFACE_RGB)
+
 static esp_err_t esp32s3_4dlcd_del(esp_lcd_panel_t *panel);
 static esp_err_t esp32s3_4dlcd_reset(esp_lcd_panel_t *panel);
 static esp_err_t esp32s3_4dlcd_init(esp_lcd_panel_t *panel);
@@ -475,6 +477,8 @@ static esp_err_t esp32s3_4dlcd_disp_on_off(esp_lcd_panel_t *panel, bool on_off)
     return ESP_OK;
 }
 
+#endif // !CONFIG_LCD_INTERFACE_RGB
+
 esp_err_t backlight_init(void)
 {
     // 1. Configure timer with 10-bit resolution
@@ -512,10 +516,12 @@ esp_err_t backlight_set(uint8_t brightness)
 esp_err_t esp32s3_4dlcd_full_init(esp_lcd_panel_handle_t *ret_panel)
 {
     esp_err_t ret = ESP_OK;
-    esp_lcd_panel_io_handle_t io_handle = NULL;
     esp_lcd_panel_handle_t panel_handle = NULL;
 
     ESP_RETURN_ON_FALSE(ret_panel, ESP_ERR_INVALID_ARG, TAG, "invalid argument");
+
+#if !defined(CONFIG_LCD_INTERFACE_RGB)
+    esp_lcd_panel_io_handle_t io_handle = NULL;
 
     // Caller is responsible for the SPI host not already being initialized elsewhere;
     // this component does not track bus ownership across displays/peripherals.
@@ -530,6 +536,16 @@ esp_err_t esp32s3_4dlcd_full_init(esp_lcd_panel_handle_t *ret_panel)
     ESP_GOTO_ON_ERROR(esp_lcd_panel_reset(panel_handle), err, TAG, "panel reset failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_init(panel_handle), err, TAG, "panel init failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_disp_on_off(panel_handle, true), err, TAG, "panel display on failed");
+#else
+    // RGB panels are driven directly by the ESP-IDF esp_lcd_rgb driver over a parallel
+    // DMA-refreshed bus - there's no vendor init-command sequence and no dedicated reset
+    // line on this connector (tied to VDD-3V3), unlike the SPI/QSPI variants.
+    esp_lcd_rgb_panel_config_t panel_config = ESP32S3_4DLCD_RGB_PANEL_CONFIG();
+
+    ESP_GOTO_ON_ERROR(esp_lcd_new_rgb_panel(&panel_config, &panel_handle), err, TAG, "rgb panel create failed");
+    ESP_GOTO_ON_ERROR(esp_lcd_panel_reset(panel_handle), err, TAG, "panel reset failed");
+    ESP_GOTO_ON_ERROR(esp_lcd_panel_init(panel_handle), err, TAG, "panel init failed");
+#endif
 
     ESP_GOTO_ON_ERROR(backlight_init(), err, TAG, "backlight init failed");
     ESP_GOTO_ON_ERROR(backlight_set(255), err, TAG, "backlight set failed");
@@ -541,9 +557,11 @@ err:
     if (panel_handle) {
         esp_lcd_panel_del(panel_handle);
     }
+#if !defined(CONFIG_LCD_INTERFACE_RGB)
     if (io_handle) {
         esp_lcd_panel_io_del(io_handle);
     }
     spi_bus_free(LCD_HOST);
+#endif
     return ret;
 }
