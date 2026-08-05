@@ -14,6 +14,25 @@
 
 #pragma once
 
+#include "sdkconfig.h"
+
+#if defined(CONFIG_ESP32S3_4DLCD_ALLOW_NOPSRAM) && \
+    !(defined(CONFIG_LCD_INTERFACE_SPI) || defined(CONFIG_LCD_INTERFACE_QSPI))
+#error "CONFIG_ESP32S3_4DLCD_ALLOW_NOPSRAM is only valid on SPI and QSPI displays - the selected display's framebuffer requires PSRAM."
+#endif
+
+#if !defined(CONFIG_ESP32S3_4DLCD_ALLOW_NOPSRAM) && !defined(CONFIG_SPIRAM)
+#error "This board requires PSRAM. Enable CONFIG_SPIRAM, or enable CONFIG_ESP32S3_4DLCD_ALLOW_NOPSRAM (SPI and QSPI displays only) to opt out."
+#endif
+
+#if defined(CONFIG_SPIRAM) && !defined(CONFIG_SPIRAM_MODE_OCT)
+#error "This board's PSRAM is octal, not quad. Select Octal Mode PSRAM."
+#endif
+
+#if defined(CONFIG_SPIRAM) && (defined(CONFIG_ESPTOOLPY_FLASHMODE_DIO) || defined(CONFIG_ESPTOOLPY_FLASHMODE_DOUT))
+#error "This board's flash chip (GD25Q127C) is quad-SPI. DIO/DOUT flash mode combined with octal PSRAM crashes at boot during MSPI timing tuning."
+#endif
+
 #include "esp_lcd_panel_vendor.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_io_spi.h"
@@ -21,9 +40,9 @@
 #include "driver/ledc.h"
 #include "driver/spi_master.h"
 
-#if defined(LCD_INTERFACE_RGB)
+#if defined(CONFIG_LCD_INTERFACE_RGB)
 #include "4dlcd_rgb.h" // TODO
-#else // LCD_INTERFACE_QSPI or LCD_INTERFACE_SPI
+#else // CONFIG_LCD_INTERFACE_QSPI or CONFIG_LCD_INTERFACE_SPI
 #include "4dlcd_spi.h"
 #endif // LCD_INTERFACE
 

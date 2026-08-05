@@ -71,4 +71,16 @@ config LCD_INTERFACE_RGB
     bool
     default n
 
+# Opt-out of the forced-PSRAM requirement. Only offered for the SPI and QSPI
+# displays. RGB displays all require PSRAM for their framebuffer size regardless
+# of this setting, so it's intentionally not selectable there.
+config ESP32S3_4DLCD_ALLOW_NOPSRAM
+    bool "Allow running without PSRAM (2.4/2.8/3.2/3.5 SPI and 4.3 QSPI only)"
+    depends on ESP32S3_4DLCD_24 || ESP32S3_4DLCD_28 || ESP32S3_4DLCD_32 || ESP32S3_4DLCD_35 || ESP32S3_4DLCD_43Q
+    default n
+    help
+      By default this component requires PSRAM regardless of the needs for a large
+      framebuffer. Enable this only if you have verified your application's framebuffers
+      and other allocations fit in internal RAM alongside WiFi/BT on SPI/QSPI displays.
+
 endmenu
