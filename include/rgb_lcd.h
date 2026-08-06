@@ -45,7 +45,7 @@ extern "C" {
 // datasheet, not this schematic - see the README's 4DLCD-xxxxxx datasheet
 // links. Selecting the wrong one will not "mostly work"; it'll be a blank,
 // torn, or rolling image, since it's the video timing itself that's wrong.
-#if defined(CONFIG_ESP32S3_4DLCD_43)
+#if defined(CONFIG_ESP32S3_LCD_43)
 #define LCD_PCLK_HZ              (16 * 1000 * 1000)
 #define LCD_HSYNC_PULSE_WIDTH    4
 #define LCD_HSYNC_BACK_PORCH     8
@@ -57,7 +57,7 @@ extern "C" {
 #define LCD_HSYNC_IDLE_LOW       false
 #define LCD_VSYNC_IDLE_LOW       true
 #define LCD_DE_IDLE_HIGH         false
-#elif defined(CONFIG_ESP32S3_4DLCD_50)
+#elif defined(CONFIG_ESP32S3_LCD_50)
 #define LCD_PCLK_HZ              (16 * 1000 * 1000)
 #define LCD_HSYNC_PULSE_WIDTH    4
 #define LCD_HSYNC_BACK_PORCH     8
@@ -69,7 +69,7 @@ extern "C" {
 #define LCD_HSYNC_IDLE_LOW       true
 #define LCD_VSYNC_IDLE_LOW       true
 #define LCD_DE_IDLE_HIGH         true
-#elif defined(CONFIG_ESP32S3_4DLCD_70)
+#elif defined(CONFIG_ESP32S3_LCD_70)
 #define LCD_PCLK_HZ              (18 * 1000 * 1000)
 #define LCD_HSYNC_PULSE_WIDTH    50
 #define LCD_HSYNC_BACK_PORCH     32
@@ -81,7 +81,7 @@ extern "C" {
 #define LCD_HSYNC_IDLE_LOW       false
 #define LCD_VSYNC_IDLE_LOW       true
 #define LCD_DE_IDLE_HIGH         false
-#elif defined(CONFIG_ESP32S3_4DLCD_90)
+#elif defined(CONFIG_ESP32S3_LCD_90)
 #define LCD_PCLK_HZ              (16 * 1000 * 1000)
 #define LCD_HSYNC_PULSE_WIDTH    50
 #define LCD_HSYNC_BACK_PORCH     32
@@ -111,7 +111,7 @@ extern "C" {
  *       buffer (800x480x2 = 768000 bytes), which does not fit in internal SRAM
  *       alongside WiFi/BT. CONFIG_SPIRAM must be enabled in sdkconfig.
  */
-#define ESP32S3_4DLCD_RGB_PANEL_CONFIG()                              \
+#define ESP32S3_LCD_RGB_PANEL_CONFIG()                              \
     {                                                                 \
         .clk_src = LCD_CLK_SRC_PLL160M,                               \
         .timings = {                                                  \

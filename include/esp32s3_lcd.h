@@ -16,13 +16,13 @@
 
 #include "sdkconfig.h"
 
-#if defined(CONFIG_ESP32S3_4DLCD_ALLOW_NOPSRAM) && \
+#if defined(CONFIG_ESP32S3_LCD_ALLOW_NOPSRAM) && \
     !(defined(CONFIG_LCD_INTERFACE_SPI) || defined(CONFIG_LCD_INTERFACE_QSPI))
-#error "CONFIG_ESP32S3_4DLCD_ALLOW_NOPSRAM is only valid on SPI and QSPI displays - the selected display's framebuffer requires PSRAM."
+#error "CONFIG_ESP32S3_LCD_ALLOW_NOPSRAM is only valid on SPI and QSPI displays - the selected display's framebuffer requires PSRAM."
 #endif
 
-#if !defined(CONFIG_ESP32S3_4DLCD_ALLOW_NOPSRAM) && !defined(CONFIG_SPIRAM)
-#error "This board requires PSRAM. Enable CONFIG_SPIRAM, or enable CONFIG_ESP32S3_4DLCD_ALLOW_NOPSRAM (SPI and QSPI displays only) to opt out."
+#if !defined(CONFIG_ESP32S3_LCD_ALLOW_NOPSRAM) && !defined(CONFIG_SPIRAM)
+#error "This board requires PSRAM. Enable CONFIG_SPIRAM, or enable CONFIG_ESP32S3_LCD_ALLOW_NOPSRAM (SPI and QSPI displays only) to opt out."
 #endif
 
 #if defined(CONFIG_SPIRAM) && !defined(CONFIG_SPIRAM_MODE_OCT)
@@ -40,9 +40,9 @@
 #include "driver/ledc.h"
 
 #if defined(CONFIG_LCD_INTERFACE_RGB)
-#include "4dlcd_rgb.h" // TODO
+#include "rgb_lcd.h"
 #else // CONFIG_LCD_INTERFACE_QSPI or CONFIG_LCD_INTERFACE_SPI
-#include "4dlcd_spi.h"
+#include "spi_lcd.h"
 #endif // LCD_INTERFACE
 
 #ifdef __cplusplus
@@ -58,7 +58,7 @@ typedef struct {
     const void *data;       /*<! Buffer that holds the command specific data */
     size_t data_bytes;      /*<! Size of `data` in memory, in bytes */
     unsigned int delay_ms;  /*<! Delay in milliseconds after this command */
-} esp32s3_4dlcd_init_cmd_t;
+} esp32s3_lcd_init_cmd_t;
 
 /**
  * @brief LCD panel vendor configuration.
@@ -67,12 +67,12 @@ typedef struct {
  *
  */
 typedef struct {
-    const esp32s3_4dlcd_init_cmd_t *init_cmds;      /*!< Pointer to initialization commands array. Set to NULL if using default commands.
+    const esp32s3_lcd_init_cmd_t *init_cmds;      /*!< Pointer to initialization commands array. Set to NULL if using default commands.
                                                          *   The array should be declared as `static const` and positioned outside the function.
                                                          *   Please refer to `vendor_specific_init_default` in source file.
                                                          */
     uint16_t init_cmds_size;                            /*<! Number of commands in above array */
-} esp32s3_4dlcd_vendor_config_t;
+} esp32s3_lcd_vendor_config_t;
 
 /**
  * @brief Create LCD panel for 4D Systems ESP32-S3 series of displays
@@ -86,7 +86,7 @@ typedef struct {
  *          - ESP_ERR_NO_MEM        if out of memory
  *          - ESP_OK                on success
  */
-esp_err_t esp_lcd_new_esp32s3_4dlcd(const esp_lcd_panel_io_handle_t io, esp_lcd_panel_handle_t *ret_panel);
+esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_panel_handle_t *ret_panel);
 
 /**
  * @brief LCD panel bus configuration structure
@@ -95,7 +95,7 @@ esp_err_t esp_lcd_new_esp32s3_4dlcd(const esp_lcd_panel_io_handle_t io, esp_lcd_
  *
  */
 #if defined(CONFIG_LCD_INTERFACE_SPI)
-#define ESP32S3_4DLCD_BUS_SPI_CONFIG(max_trans_sz)              \
+#define ESP32S3_LCD_BUS_SPI_CONFIG(max_trans_sz)              \
     {                                                           \
         .sclk_io_num = LCD_SPI_SCLK_GPIO_NUM,                   \
         .mosi_io_num = LCD_SPI_MOSI_GPIO_NUM,                   \
@@ -105,7 +105,7 @@ esp_err_t esp_lcd_new_esp32s3_4dlcd(const esp_lcd_panel_io_handle_t io, esp_lcd_
         .max_transfer_sz = max_trans_sz,                        \
     }
 #elif defined(CONFIG_LCD_INTERFACE_QSPI)
-#define ESP32S3_4DLCD_BUS_SPI_CONFIG(max_trans_sz)              \
+#define ESP32S3_LCD_BUS_SPI_CONFIG(max_trans_sz)              \
     {                                                           \
         .sclk_io_num = LCD_SPI_SCLK_GPIO_NUM,                   \
         .data0_io_num = LCD_QSPI_DAT0_GPIO_NUM,                 \
@@ -126,7 +126,7 @@ esp_err_t esp_lcd_new_esp32s3_4dlcd(const esp_lcd_panel_io_handle_t io, esp_lcd_
  *
  */
 #if defined(CONFIG_LCD_INTERFACE_SPI)
-#define ESP32S3_4DLCD_IO_SPI_CONFIG(callback, callback_ctx)     \
+#define ESP32S3_LCD_IO_SPI_CONFIG(callback, callback_ctx)     \
     {                                                           \
         .cs_gpio_num = LCD_SPI_CS_GPIO_NUM,                     \
         .dc_gpio_num = LCD_SPI_DC_GPIO_NUM,                     \
@@ -139,7 +139,7 @@ esp_err_t esp_lcd_new_esp32s3_4dlcd(const esp_lcd_panel_io_handle_t io, esp_lcd_
         .lcd_param_bits = 8,                                    \
     }
 #else // CONFIG_LCD_INTERFACE_QSPI
-#define ESP32S3_4DLCD_IO_SPI_CONFIG(callback, callback_ctx)     \
+#define ESP32S3_LCD_IO_SPI_CONFIG(callback, callback_ctx)     \
     {                                                           \
         .cs_gpio_num = LCD_SPI_CS_GPIO_NUM,                     \
         .dc_gpio_num = LCD_SPI_DC_GPIO_NUM,                     \
@@ -163,7 +163,7 @@ esp_err_t backlight_set(uint8_t brightness);
  * @param[out] ret_panel  Returned LCD panel handle, ready for esp_lcd_panel_draw_bitmap()
  * @return esp_err_t
  */
-esp_err_t esp32s3_4dlcd_full_init(esp_lcd_panel_handle_t *ret_panel);
+esp_err_t esp32s3_lcd_full_init(esp_lcd_panel_handle_t *ret_panel);
 
 #ifdef __cplusplus
 }

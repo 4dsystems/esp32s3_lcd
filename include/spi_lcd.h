@@ -10,11 +10,11 @@ extern "C" {
 #define LCD_RST_ACTIVE_HIGH     0 // Reset pin active low
 
 // Resolution and bits per pixel for different 4D Systems ESP32-S3 LCD models
-#if defined(CONFIG_ESP32S3_4DLCD_35)
+#if defined(CONFIG_ESP32S3_LCD_35)
 #define LCD_WIDTH               320
 #define LCD_HEIGHT              480
 #define LCD_BITS_PER_PIXEL      18
-#elif defined(CONFIG_ESP32S3_4DLCD_43Q)
+#elif defined(CONFIG_ESP32S3_LCD_43Q)
 #define LCD_WIDTH               480
 #define LCD_HEIGHT              272
 #define LCD_BITS_PER_PIXEL      16
@@ -25,7 +25,7 @@ extern "C" {
 #endif
 
 // Pin definitions for SPI/QSPI, backlight, and reset
-#if defined(CONFIG_ESP32S3_4DLCD_43Q)
+#if defined(CONFIG_ESP32S3_LCD_43Q)
 #define LCD_BL_GPIO_NUM         2       // GPIO for backlight control
 #define LCD_RST_GPIO_NUM        8       // GPIO for LCD reset
 #define LCD_SPI_CS_GPIO_NUM     6       // GPIO for SPI CS
@@ -50,9 +50,9 @@ extern "C" {
 #define LCD_BL_PWM_FREQ_HZ      25000    // PWM frequency (25kHz)
 #define LCD_BL_PWM_RESOLUTION   LEDC_TIMER_8_BIT  // 8-bit resolution (0-255)
 
-#if defined(CONFIG_ESP32S3_4DLCD_SPI2)
+#if defined(CONFIG_ESP32S3_LCD_SPI2)
 #define LCD_HOST    SPI2_HOST
-#else // CONFIG_ESP32S3_4DLCD_SPI3
+#else // CONFIG_ESP32S3_LCD_SPI3
 #define LCD_HOST    SPI3_HOST
 #endif
 

@@ -21,21 +21,21 @@
 #include "esp_log.h"
 #include "esp_check.h"
 
-#include "esp32s3_4dlcd.h"
+#include "esp32s3_lcd.h"
 
-static const char *TAG = "esp32s3_4dlcd";
+static const char *TAG = "esp32s3_lcd";
 
 #if !defined(CONFIG_LCD_INTERFACE_RGB)
 
-static esp_err_t esp32s3_4dlcd_del(esp_lcd_panel_t *panel);
-static esp_err_t esp32s3_4dlcd_reset(esp_lcd_panel_t *panel);
-static esp_err_t esp32s3_4dlcd_init(esp_lcd_panel_t *panel);
-static esp_err_t esp32s3_4dlcd_draw_bitmap(esp_lcd_panel_t *panel, int x_start, int y_start, int x_end, int y_end, const void *color_data);
-static esp_err_t esp32s3_4dlcd_invert_color(esp_lcd_panel_t *panel, bool invert_color_data);
-static esp_err_t esp32s3_4dlcd_mirror(esp_lcd_panel_t *panel, bool mirror_x, bool mirror_y);
-static esp_err_t esp32s3_4dlcd_swap_xy(esp_lcd_panel_t *panel, bool swap_axes);
-static esp_err_t esp32s3_4dlcd_set_gap(esp_lcd_panel_t *panel, int x_gap, int y_gap);
-static esp_err_t esp32s3_4dlcd_disp_on_off(esp_lcd_panel_t *panel, bool off);
+static esp_err_t esp32s3_lcd_del(esp_lcd_panel_t *panel);
+static esp_err_t esp32s3_lcd_reset(esp_lcd_panel_t *panel);
+static esp_err_t esp32s3_lcd_init(esp_lcd_panel_t *panel);
+static esp_err_t esp32s3_lcd_draw_bitmap(esp_lcd_panel_t *panel, int x_start, int y_start, int x_end, int y_end, const void *color_data);
+static esp_err_t esp32s3_lcd_invert_color(esp_lcd_panel_t *panel, bool invert_color_data);
+static esp_err_t esp32s3_lcd_mirror(esp_lcd_panel_t *panel, bool mirror_x, bool mirror_y);
+static esp_err_t esp32s3_lcd_swap_xy(esp_lcd_panel_t *panel, bool swap_axes);
+static esp_err_t esp32s3_lcd_set_gap(esp_lcd_panel_t *panel, int x_gap, int y_gap);
+static esp_err_t esp32s3_lcd_disp_on_off(esp_lcd_panel_t *panel, bool off);
 
 #if defined(CONFIG_LCD_INTERFACE_QSPI)
 #define LCD_OPCODE_WRITE_CMD        (0x02ULL)
@@ -74,19 +74,19 @@ typedef struct {
     uint8_t fb_bits_per_pixel;
     uint8_t madctl_val; // save current value of LCD_CMD_MADCTL register
     uint8_t colmod_val; // save current value of LCD_CMD_COLMOD register
-    const esp32s3_4dlcd_init_cmd_t *init_cmds;
+    const esp32s3_lcd_init_cmd_t *init_cmds;
     uint16_t init_cmds_size;
-} esp32s3_4dlcd_panel_t;
+} esp32s3_lcd_panel_t;
 
-esp_err_t esp_lcd_new_esp32s3_4dlcd(const esp_lcd_panel_io_handle_t io, esp_lcd_panel_handle_t *ret_panel)
+esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_panel_handle_t *ret_panel)
 {
     esp_err_t ret = ESP_OK;
-    esp32s3_4dlcd_panel_t *esp32s3_4dlcd = NULL;
+    esp32s3_lcd_panel_t *esp32s3_lcd = NULL;
     gpio_config_t io_conf = { 0 };
 
     ESP_GOTO_ON_FALSE(io && ret_panel, ESP_ERR_INVALID_ARG, err, TAG, "invalid argument");
-    esp32s3_4dlcd = (esp32s3_4dlcd_panel_t *)calloc(1, sizeof(esp32s3_4dlcd_panel_t));
-    ESP_GOTO_ON_FALSE(esp32s3_4dlcd, ESP_ERR_NO_MEM, err, TAG, "no mem for esp32s3_4dlcd panel");
+    esp32s3_lcd = (esp32s3_lcd_panel_t *)calloc(1, sizeof(esp32s3_lcd_panel_t));
+    ESP_GOTO_ON_FALSE(esp32s3_lcd, ESP_ERR_NO_MEM, err, TAG, "no mem for esp32s3_lcd panel");
 
 #if LCD_RST_GPIO_NUM >= 0
     io_conf.mode = GPIO_MODE_OUTPUT;
@@ -95,76 +95,76 @@ esp_err_t esp_lcd_new_esp32s3_4dlcd(const esp_lcd_panel_io_handle_t io, esp_lcd_
 #endif
 
 #if (LCD_COLOR_ORDER == LCD_RGB_ELEMENT_ORDER_RGB)
-    esp32s3_4dlcd->madctl_val = 0;
+    esp32s3_lcd->madctl_val = 0;
 #elif (LCD_COLOR_ORDER == LCD_RGB_ELEMENT_ORDER_BGR)
-    esp32s3_4dlcd->madctl_val |= LCD_CMD_BGR_BIT;
+    esp32s3_lcd->madctl_val |= LCD_CMD_BGR_BIT;
 #else
     ESP_GOTO_ON_FALSE(false, ESP_ERR_NOT_SUPPORTED, err, TAG, "unsupported rgb endian");
 #endif
 
 #if (LCD_BITS_PER_PIXEL == 16)
-    esp32s3_4dlcd->colmod_val = 0x55; // 16 bits per pixel, RGB565 format
-    esp32s3_4dlcd->fb_bits_per_pixel = 16;
+    esp32s3_lcd->colmod_val = 0x55; // 16 bits per pixel, RGB565 format
+    esp32s3_lcd->fb_bits_per_pixel = 16;
 #elif (LCD_BITS_PER_PIXEL == 18)
-    esp32s3_4dlcd->colmod_val = 0x66;
+    esp32s3_lcd->colmod_val = 0x66;
     // each color component (R/G/B) should occupy the 6 high bits of a byte, which means 3 full bytes are required for a pixel
-    esp32s3_4dlcd->fb_bits_per_pixel = 24;
+    esp32s3_lcd->fb_bits_per_pixel = 24;
 #else
     ESP_GOTO_ON_FALSE(false, ESP_ERR_NOT_SUPPORTED, err, TAG, "unsupported pixel width");
 #endif
 
-    esp32s3_4dlcd->io = io;
-    esp32s3_4dlcd->reset_gpio_num = LCD_RST_GPIO_NUM;
-    esp32s3_4dlcd->reset_level = LCD_RST_ACTIVE_HIGH;
-    esp32s3_4dlcd->base.del = esp32s3_4dlcd_del;
-    esp32s3_4dlcd->base.reset = esp32s3_4dlcd_reset;
-    esp32s3_4dlcd->base.init = esp32s3_4dlcd_init;
-    esp32s3_4dlcd->base.draw_bitmap = esp32s3_4dlcd_draw_bitmap;
-    esp32s3_4dlcd->base.invert_color = esp32s3_4dlcd_invert_color;
-    esp32s3_4dlcd->base.set_gap = esp32s3_4dlcd_set_gap;
-    esp32s3_4dlcd->base.mirror = esp32s3_4dlcd_mirror;
-    esp32s3_4dlcd->base.swap_xy = esp32s3_4dlcd_swap_xy;
-    esp32s3_4dlcd->base.disp_on_off = esp32s3_4dlcd_disp_on_off;
+    esp32s3_lcd->io = io;
+    esp32s3_lcd->reset_gpio_num = LCD_RST_GPIO_NUM;
+    esp32s3_lcd->reset_level = LCD_RST_ACTIVE_HIGH;
+    esp32s3_lcd->base.del = esp32s3_lcd_del;
+    esp32s3_lcd->base.reset = esp32s3_lcd_reset;
+    esp32s3_lcd->base.init = esp32s3_lcd_init;
+    esp32s3_lcd->base.draw_bitmap = esp32s3_lcd_draw_bitmap;
+    esp32s3_lcd->base.invert_color = esp32s3_lcd_invert_color;
+    esp32s3_lcd->base.set_gap = esp32s3_lcd_set_gap;
+    esp32s3_lcd->base.mirror = esp32s3_lcd_mirror;
+    esp32s3_lcd->base.swap_xy = esp32s3_lcd_swap_xy;
+    esp32s3_lcd->base.disp_on_off = esp32s3_lcd_disp_on_off;
 
-    *ret_panel = &(esp32s3_4dlcd->base);
-    ESP_LOGD(TAG, "new esp32s3_4dlcd panel @%p", esp32s3_4dlcd);
+    *ret_panel = &(esp32s3_lcd->base);
+    ESP_LOGD(TAG, "new esp32s3_lcd panel @%p", esp32s3_lcd);
 
     ESP_LOGI(TAG, "LCD panel create success");
 
     return ESP_OK;
 
 err:
-    if (esp32s3_4dlcd) {
+    if (esp32s3_lcd) {
 #if LCD_RST_GPIO_NUM >= 0
         gpio_reset_pin(LCD_RST_GPIO_NUM);
 #endif
-        free(esp32s3_4dlcd);
+        free(esp32s3_lcd);
     }
     return ret;
 }
 
-static esp_err_t esp32s3_4dlcd_del(esp_lcd_panel_t *panel)
+static esp_err_t esp32s3_lcd_del(esp_lcd_panel_t *panel)
 {
-    esp32s3_4dlcd_panel_t *esp32s3_4dlcd = __containerof(panel, esp32s3_4dlcd_panel_t, base);
+    esp32s3_lcd_panel_t *esp32s3_lcd = __containerof(panel, esp32s3_lcd_panel_t, base);
 
-    if (esp32s3_4dlcd->reset_gpio_num >= 0) {
-        gpio_reset_pin(esp32s3_4dlcd->reset_gpio_num);
+    if (esp32s3_lcd->reset_gpio_num >= 0) {
+        gpio_reset_pin(esp32s3_lcd->reset_gpio_num);
     }
-    ESP_LOGD(TAG, "del esp32s3_4dlcd panel @%p", esp32s3_4dlcd);
-    free(esp32s3_4dlcd);
+    ESP_LOGD(TAG, "del esp32s3_lcd panel @%p", esp32s3_lcd);
+    free(esp32s3_lcd);
     return ESP_OK;
 }
 
-static esp_err_t esp32s3_4dlcd_reset(esp_lcd_panel_t *panel)
+static esp_err_t esp32s3_lcd_reset(esp_lcd_panel_t *panel)
 {
-    esp32s3_4dlcd_panel_t *esp32s3_4dlcd = __containerof(panel, esp32s3_4dlcd_panel_t, base);
-    esp_lcd_panel_io_handle_t io = esp32s3_4dlcd->io;
+    esp32s3_lcd_panel_t *esp32s3_lcd = __containerof(panel, esp32s3_lcd_panel_t, base);
+    esp_lcd_panel_io_handle_t io = esp32s3_lcd->io;
 
     // perform hardware reset
-    if (esp32s3_4dlcd->reset_gpio_num >= 0) {
-        gpio_set_level(esp32s3_4dlcd->reset_gpio_num, esp32s3_4dlcd->reset_level);
+    if (esp32s3_lcd->reset_gpio_num >= 0) {
+        gpio_set_level(esp32s3_lcd->reset_gpio_num, esp32s3_lcd->reset_level);
         vTaskDelay(pdMS_TO_TICKS(10));
-        gpio_set_level(esp32s3_4dlcd->reset_gpio_num, !esp32s3_4dlcd->reset_level);
+        gpio_set_level(esp32s3_lcd->reset_gpio_num, !esp32s3_lcd->reset_level);
         vTaskDelay(pdMS_TO_TICKS(10));
     } else { // perform software reset
         ESP_RETURN_ON_ERROR(tx_param(io, LCD_CMD_SWRESET, NULL, 0), TAG, "send command failed");
@@ -174,10 +174,10 @@ static esp_err_t esp32s3_4dlcd_reset(esp_lcd_panel_t *panel)
     return ESP_OK;
 }
 
-static const esp32s3_4dlcd_init_cmd_t vendor_specific_init_default[] = {
-#if defined(CONFIG_ESP32S3_4DLCD_24) || \
-    defined(CONFIG_ESP32S3_4DLCD_28) || \
-    defined(CONFIG_ESP32S3_4DLCD_32)
+static const esp32s3_lcd_init_cmd_t vendor_specific_init_default[] = {
+#if defined(CONFIG_ESP32S3_LCD_24) || \
+    defined(CONFIG_ESP32S3_LCD_28) || \
+    defined(CONFIG_ESP32S3_LCD_32)
     { 0x11, NULL, 0, 120 },
     { 0x13, NULL, 0, 0 },
     { 0xEF, (uint8_t[]) { 0x01, 0x01, 0x00 }, 3, 0 },
@@ -199,13 +199,13 @@ static const esp32s3_4dlcd_init_cmd_t vendor_specific_init_default[] = {
     { 0x26, (uint8_t[]) { 0x01 }, 1, 0 },
     { 0xE0, (uint8_t[]) { 0x0F, 0x2d, 0x0e, 0x08, 0x12, 0x0a, 0x3d, 0x95, 0x31, 0x04, 0x10, 0x09, 0x09, 0x0d, 0x00}, 0, 0 },
     { 0xE1, (uint8_t[]) { 0x00, 0x12, 0x17, 0x03, 0x0d, 0x05, 0x2c, 0x44, 0x41, 0x05, 0x0F, 0x0a, 0x30, 0x32, 0x0F}, 15, 120 },
-#if defined(CONFIG_ESP32S3_4DLCD_32)
+#if defined(CONFIG_ESP32S3_LCD_32)
     { 0x20, NULL, 0, 0 },
 #else
     { 0x21, NULL, 0, 0 },
 #endif
     { 0x29, NULL, 0, 120 },
-#elif defined(CONFIG_ESP32S3_4DLCD_35)
+#elif defined(CONFIG_ESP32S3_LCD_35)
     {0xE0, (uint8_t []){0x00, 0x13, 0x18, 0x04, 0x0F, 0x06, 0x3A, 0x56, 0x4D, 0x03, 0x0A, 0x06, 0x30, 0x3E, 0x0F}, 15, 0},
     {0xE1, (uint8_t []){0x00, 0x13, 0x18, 0x01, 0x11, 0x06, 0x38, 0x34, 0x4D, 0x06, 0x0D, 0x0B, 0x31, 0x37, 0x0F}, 15, 0},
     {0xC0, (uint8_t []){0x18, 0x16}, 2, 0},
@@ -222,7 +222,7 @@ static const esp32s3_4dlcd_init_cmd_t vendor_specific_init_default[] = {
     {0x11, NULL, 0, 120},
     {0x29, NULL, 0, 120},
     {0x21, NULL, 0, 120},
-#elif defined(CONFIG_ESP32S3_4DLCD_43Q)
+#elif defined(CONFIG_ESP32S3_LCD_43Q)
     {0x38, NULL, 0, 0},
     {0xff, (uint8_t []) {0xa5}, 1, 0},
     {0xe7, (uint8_t []) {0x10}, 1, 0},
@@ -327,23 +327,23 @@ static const esp32s3_4dlcd_init_cmd_t vendor_specific_init_default[] = {
 #endif
 };
 
-static esp_err_t esp32s3_4dlcd_init(esp_lcd_panel_t *panel)
+static esp_err_t esp32s3_lcd_init(esp_lcd_panel_t *panel)
 {
-    esp32s3_4dlcd_panel_t *esp32s3_4dlcd = __containerof(panel, esp32s3_4dlcd_panel_t, base);
-    esp_lcd_panel_io_handle_t io = esp32s3_4dlcd->io;
+    esp32s3_lcd_panel_t *esp32s3_lcd = __containerof(panel, esp32s3_lcd_panel_t, base);
+    esp_lcd_panel_io_handle_t io = esp32s3_lcd->io;
 
     // LCD goes into sleep mode and display will be turned off after power on reset, exit sleep mode first
     ESP_RETURN_ON_ERROR(tx_param(io, LCD_CMD_SLPOUT, NULL, 0), TAG, "send command failed");
     vTaskDelay(pdMS_TO_TICKS(100));
     ESP_RETURN_ON_ERROR(tx_param(io, LCD_CMD_MADCTL, ((uint8_t[]) {
-        esp32s3_4dlcd->madctl_val,
+        esp32s3_lcd->madctl_val,
     }), 1), TAG, "send command failed");
     ESP_RETURN_ON_ERROR(tx_param(io, LCD_CMD_COLMOD, ((uint8_t[]) {
-        esp32s3_4dlcd->colmod_val,
+        esp32s3_lcd->colmod_val,
     }), 1), TAG, "send command failed");
 
-    const esp32s3_4dlcd_init_cmd_t *init_cmds = vendor_specific_init_default;
-    uint16_t init_cmds_size = sizeof(vendor_specific_init_default) / sizeof(esp32s3_4dlcd_init_cmd_t);
+    const esp32s3_lcd_init_cmd_t *init_cmds = vendor_specific_init_default;
+    uint16_t init_cmds_size = sizeof(vendor_specific_init_default) / sizeof(esp32s3_lcd_init_cmd_t);
 
     bool is_cmd_overwritten = false;
     for (int i = 0; i < init_cmds_size; i++) {
@@ -351,11 +351,11 @@ static esp_err_t esp32s3_4dlcd_init(esp_lcd_panel_t *panel)
         switch (init_cmds[i].cmd) {
         case LCD_CMD_MADCTL:
             is_cmd_overwritten = true;
-            esp32s3_4dlcd->madctl_val = ((uint8_t *)init_cmds[i].data)[0];
+            esp32s3_lcd->madctl_val = ((uint8_t *)init_cmds[i].data)[0];
             break;
         case LCD_CMD_COLMOD:
             is_cmd_overwritten = true;
-            esp32s3_4dlcd->colmod_val = ((uint8_t *)init_cmds[i].data)[0];
+            esp32s3_lcd->colmod_val = ((uint8_t *)init_cmds[i].data)[0];
             break;
         default:
             is_cmd_overwritten = false;
@@ -375,16 +375,16 @@ static esp_err_t esp32s3_4dlcd_init(esp_lcd_panel_t *panel)
     return ESP_OK;
 }
 
-static esp_err_t esp32s3_4dlcd_draw_bitmap(esp_lcd_panel_t *panel, int x_start, int y_start, int x_end, int y_end, const void *color_data)
+static esp_err_t esp32s3_lcd_draw_bitmap(esp_lcd_panel_t *panel, int x_start, int y_start, int x_end, int y_end, const void *color_data)
 {
-    esp32s3_4dlcd_panel_t *esp32s3_4dlcd = __containerof(panel, esp32s3_4dlcd_panel_t, base);
+    esp32s3_lcd_panel_t *esp32s3_lcd = __containerof(panel, esp32s3_lcd_panel_t, base);
     assert((x_start < x_end) && (y_start < y_end) && "start position must be smaller than end position");
-    esp_lcd_panel_io_handle_t io = esp32s3_4dlcd->io;
+    esp_lcd_panel_io_handle_t io = esp32s3_lcd->io;
 
-    x_start += esp32s3_4dlcd->x_gap;
-    x_end += esp32s3_4dlcd->x_gap;
-    y_start += esp32s3_4dlcd->y_gap;
-    y_end += esp32s3_4dlcd->y_gap;
+    x_start += esp32s3_lcd->x_gap;
+    x_end += esp32s3_lcd->x_gap;
+    y_start += esp32s3_lcd->y_gap;
+    y_end += esp32s3_lcd->y_gap;
 
     // define an area of frame memory where MCU can access
     ESP_RETURN_ON_ERROR(tx_param(io, LCD_CMD_CASET, ((uint8_t[]) {
@@ -400,16 +400,16 @@ static esp_err_t esp32s3_4dlcd_draw_bitmap(esp_lcd_panel_t *panel, int x_start, 
         (y_end - 1) & 0xFF,
     }), 4), TAG, "send command failed");
     // transfer frame buffer
-    size_t len = (x_end - x_start) * (y_end - y_start) * esp32s3_4dlcd->fb_bits_per_pixel / 8;
+    size_t len = (x_end - x_start) * (y_end - y_start) * esp32s3_lcd->fb_bits_per_pixel / 8;
     tx_color(io, LCD_CMD_RAMWR, color_data, len);
 
     return ESP_OK;
 }
 
-static esp_err_t esp32s3_4dlcd_invert_color(esp_lcd_panel_t *panel, bool invert_color_data)
+static esp_err_t esp32s3_lcd_invert_color(esp_lcd_panel_t *panel, bool invert_color_data)
 {
-    esp32s3_4dlcd_panel_t *esp32s3_4dlcd = __containerof(panel, esp32s3_4dlcd_panel_t, base);
-    esp_lcd_panel_io_handle_t io = esp32s3_4dlcd->io;
+    esp32s3_lcd_panel_t *esp32s3_lcd = __containerof(panel, esp32s3_lcd_panel_t, base);
+    esp_lcd_panel_io_handle_t io = esp32s3_lcd->io;
     int command = 0;
     if (invert_color_data) {
         command = LCD_CMD_INVON;
@@ -420,53 +420,53 @@ static esp_err_t esp32s3_4dlcd_invert_color(esp_lcd_panel_t *panel, bool invert_
     return ESP_OK;
 }
 
-static esp_err_t esp32s3_4dlcd_mirror(esp_lcd_panel_t *panel, bool mirror_x, bool mirror_y)
+static esp_err_t esp32s3_lcd_mirror(esp_lcd_panel_t *panel, bool mirror_x, bool mirror_y)
 {
-    esp32s3_4dlcd_panel_t *esp32s3_4dlcd = __containerof(panel, esp32s3_4dlcd_panel_t, base);
-    esp_lcd_panel_io_handle_t io = esp32s3_4dlcd->io;
+    esp32s3_lcd_panel_t *esp32s3_lcd = __containerof(panel, esp32s3_lcd_panel_t, base);
+    esp_lcd_panel_io_handle_t io = esp32s3_lcd->io;
     if (mirror_x) {
-        esp32s3_4dlcd->madctl_val |= LCD_CMD_MX_BIT;
+        esp32s3_lcd->madctl_val |= LCD_CMD_MX_BIT;
     } else {
-        esp32s3_4dlcd->madctl_val &= ~LCD_CMD_MX_BIT;
+        esp32s3_lcd->madctl_val &= ~LCD_CMD_MX_BIT;
     }
     if (mirror_y) {
-        esp32s3_4dlcd->madctl_val |= LCD_CMD_MY_BIT;
+        esp32s3_lcd->madctl_val |= LCD_CMD_MY_BIT;
     } else {
-        esp32s3_4dlcd->madctl_val &= ~LCD_CMD_MY_BIT;
+        esp32s3_lcd->madctl_val &= ~LCD_CMD_MY_BIT;
     }
     ESP_RETURN_ON_ERROR(tx_param(io, LCD_CMD_MADCTL, (uint8_t[]) {
-        esp32s3_4dlcd->madctl_val
+        esp32s3_lcd->madctl_val
     }, 1), TAG, "send command failed");
     return ESP_OK;
 }
 
-static esp_err_t esp32s3_4dlcd_swap_xy(esp_lcd_panel_t *panel, bool swap_axes)
+static esp_err_t esp32s3_lcd_swap_xy(esp_lcd_panel_t *panel, bool swap_axes)
 {
-    esp32s3_4dlcd_panel_t *esp32s3_4dlcd = __containerof(panel, esp32s3_4dlcd_panel_t, base);
-    esp_lcd_panel_io_handle_t io = esp32s3_4dlcd->io;
+    esp32s3_lcd_panel_t *esp32s3_lcd = __containerof(panel, esp32s3_lcd_panel_t, base);
+    esp_lcd_panel_io_handle_t io = esp32s3_lcd->io;
     if (swap_axes) {
-        esp32s3_4dlcd->madctl_val |= LCD_CMD_MV_BIT;
+        esp32s3_lcd->madctl_val |= LCD_CMD_MV_BIT;
     } else {
-        esp32s3_4dlcd->madctl_val &= ~LCD_CMD_MV_BIT;
+        esp32s3_lcd->madctl_val &= ~LCD_CMD_MV_BIT;
     }
     ESP_RETURN_ON_ERROR(tx_param(io, LCD_CMD_MADCTL, (uint8_t[]) {
-        esp32s3_4dlcd->madctl_val
+        esp32s3_lcd->madctl_val
     }, 1), TAG, "send command failed");
     return ESP_OK;
 }
 
-static esp_err_t esp32s3_4dlcd_set_gap(esp_lcd_panel_t *panel, int x_gap, int y_gap)
+static esp_err_t esp32s3_lcd_set_gap(esp_lcd_panel_t *panel, int x_gap, int y_gap)
 {
-    esp32s3_4dlcd_panel_t *esp32s3_4dlcd = __containerof(panel, esp32s3_4dlcd_panel_t, base);
-    esp32s3_4dlcd->x_gap = x_gap;
-    esp32s3_4dlcd->y_gap = y_gap;
+    esp32s3_lcd_panel_t *esp32s3_lcd = __containerof(panel, esp32s3_lcd_panel_t, base);
+    esp32s3_lcd->x_gap = x_gap;
+    esp32s3_lcd->y_gap = y_gap;
     return ESP_OK;
 }
 
-static esp_err_t esp32s3_4dlcd_disp_on_off(esp_lcd_panel_t *panel, bool on_off)
+static esp_err_t esp32s3_lcd_disp_on_off(esp_lcd_panel_t *panel, bool on_off)
 {
-    esp32s3_4dlcd_panel_t *esp32s3_4dlcd = __containerof(panel, esp32s3_4dlcd_panel_t, base);
-    esp_lcd_panel_io_handle_t io = esp32s3_4dlcd->io;
+    esp32s3_lcd_panel_t *esp32s3_lcd = __containerof(panel, esp32s3_lcd_panel_t, base);
+    esp_lcd_panel_io_handle_t io = esp32s3_lcd->io;
     int command = 0;
     if (on_off) {
         command = LCD_CMD_DISPON;
@@ -513,7 +513,7 @@ esp_err_t backlight_set(uint8_t brightness)
     return ESP_OK;
 }
 
-esp_err_t esp32s3_4dlcd_full_init(esp_lcd_panel_handle_t *ret_panel)
+esp_err_t esp32s3_lcd_full_init(esp_lcd_panel_handle_t *ret_panel)
 {
     esp_err_t ret = ESP_OK;
     esp_lcd_panel_handle_t panel_handle = NULL;
@@ -525,14 +525,14 @@ esp_err_t esp32s3_4dlcd_full_init(esp_lcd_panel_handle_t *ret_panel)
 
     // Caller is responsible for the SPI host not already being initialized elsewhere;
     // this component does not track bus ownership across displays/peripherals.
-    spi_bus_config_t buscfg = ESP32S3_4DLCD_BUS_SPI_CONFIG(LCD_WIDTH * 80 * sizeof(uint16_t));
+    spi_bus_config_t buscfg = ESP32S3_LCD_BUS_SPI_CONFIG(LCD_WIDTH * 80 * sizeof(uint16_t));
     ESP_RETURN_ON_ERROR(spi_bus_initialize(LCD_HOST, &buscfg, SPI_DMA_CH_AUTO), TAG, "spi bus init failed");
 
-    esp_lcd_panel_io_spi_config_t io_config = ESP32S3_4DLCD_IO_SPI_CONFIG(NULL, NULL);
+    esp_lcd_panel_io_spi_config_t io_config = ESP32S3_LCD_IO_SPI_CONFIG(NULL, NULL);
     ESP_GOTO_ON_ERROR(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)LCD_HOST, &io_config, &io_handle),
                        err, TAG, "panel io create failed");
 
-    ESP_GOTO_ON_ERROR(esp_lcd_new_esp32s3_4dlcd(io_handle, &panel_handle), err, TAG, "panel create failed");
+    ESP_GOTO_ON_ERROR(esp_lcd_new_esp32s3_lcd(io_handle, &panel_handle), err, TAG, "panel create failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_reset(panel_handle), err, TAG, "panel reset failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_init(panel_handle), err, TAG, "panel init failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_disp_on_off(panel_handle, true), err, TAG, "panel display on failed");
@@ -540,7 +540,7 @@ esp_err_t esp32s3_4dlcd_full_init(esp_lcd_panel_handle_t *ret_panel)
     // RGB panels are driven directly by the ESP-IDF esp_lcd_rgb driver over a parallel
     // DMA-refreshed bus - there's no vendor init-command sequence and no dedicated reset
     // line on this connector (tied to VDD-3V3), unlike the SPI/QSPI variants.
-    esp_lcd_rgb_panel_config_t panel_config = ESP32S3_4DLCD_RGB_PANEL_CONFIG();
+    esp_lcd_rgb_panel_config_t panel_config = ESP32S3_LCD_RGB_PANEL_CONFIG();
 
     ESP_GOTO_ON_ERROR(esp_lcd_new_rgb_panel(&panel_config, &panel_handle), err, TAG, "rgb panel create failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_reset(panel_handle), err, TAG, "panel reset failed");

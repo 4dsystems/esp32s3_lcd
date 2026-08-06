@@ -3,55 +3,55 @@ menu "4D Systems ESP32-S3 4D LCD Display Selection"
 choice
     prompt "Select your display series"
 
-config ESP32S3_4DLCD_24
+config ESP32S3_LCD_24
     bool "gen4-ESP32-24 Series"
     select LCD_INTERFACE_SPI
     help
       Select this if your 4D display is 2.4-inch
 
-config ESP32S3_4DLCD_28
+config ESP32S3_LCD_28
     select LCD_INTERFACE_SPI
     bool "gen4-ESP32-28 Series"
     help
       Select this if your 4D display is 2.8-inch
 
-config ESP32S3_4DLCD_32
+config ESP32S3_LCD_32
     bool "gen4-ESP32-32 Series"
     select LCD_INTERFACE_SPI
     help
       Select this if your 4D display is 3.2-inch
 
-config ESP32S3_4DLCD_35
+config ESP32S3_LCD_35
     bool "gen4-ESP32-35 Series"
     select LCD_INTERFACE_SPI
     help
       Select this if your 4D display is 3.5-inch
 
-config ESP32S3_4DLCD_43Q
+config ESP32S3_LCD_43Q
     bool "gen4-ESP32Q-43 Series"
     select LCD_INTERFACE_QSPI
     help
       Select this if your 4D display is 4.3-inch QSPI (480x272)
 
-config ESP32S3_4DLCD_43
+config ESP32S3_LCD_43
     bool "gen4-ESP32-43 Series"
     select LCD_INTERFACE_RGB
     help
       Select this if your 4D display is 4.3-inch RGB (800x480)
 
-config ESP32S3_4DLCD_50
+config ESP32S3_LCD_50
     bool "gen4-ESP32-50 Series"
     select LCD_INTERFACE_RGB
     help
       Select this if your 4D display is 5-inch
 
-config ESP32S3_4DLCD_70
+config ESP32S3_LCD_70
     bool "gen4-ESP32-70 Series"
     select LCD_INTERFACE_RGB
     help
       Select this if your 4D display is 7-inch
 
-config ESP32S3_4DLCD_90
+config ESP32S3_LCD_90
     bool "ESP32-90 Series"
     select LCD_INTERFACE_RGB
     help
@@ -61,14 +61,14 @@ endchoice
 
 choice
     prompt "Select your SPI host to use with the LCD"
-    depends on ESP32S3_4DLCD_24 || ESP32S3_4DLCD_28 || ESP32S3_4DLCD_32 || ESP32S3_4DLCD_35 || ESP32S3_4DLCD_43Q
+    depends on ESP32S3_LCD_24 || ESP32S3_LCD_28 || ESP32S3_LCD_32 || ESP32S3_LCD_35 || ESP32S3_LCD_43Q
 
-config ESP32S3_4DLCD_SPI2
+config ESP32S3_LCD_SPI2
     bool "SPI2"
     help
       Select this if you wish to use SPI2 with the SPI/QSPI LCD
 
-config ESP32S3_4DLCD_SPI3
+config ESP32S3_LCD_SPI3
     bool "SPI3"
     help
       Select this if you wish to use SPI3 with the SPI/QSPI LCD
@@ -90,9 +90,9 @@ config LCD_INTERFACE_RGB
 # Opt-out of the forced-PSRAM requirement. Only offered for the SPI and QSPI
 # displays. RGB displays all require PSRAM for their framebuffer size regardless
 # of this setting, so it's intentionally not selectable there.
-config ESP32S3_4DLCD_ALLOW_NOPSRAM
+config ESP32S3_LCD_ALLOW_NOPSRAM
     bool "Allow running without PSRAM (2.4/2.8/3.2/3.5 SPI and 4.3 QSPI only)"
-    depends on ESP32S3_4DLCD_24 || ESP32S3_4DLCD_28 || ESP32S3_4DLCD_32 || ESP32S3_4DLCD_35 || ESP32S3_4DLCD_43Q
+    depends on ESP32S3_LCD_24 || ESP32S3_LCD_28 || ESP32S3_LCD_32 || ESP32S3_LCD_35 || ESP32S3_LCD_43Q
     default n
     help
       By default this component requires PSRAM regardless of the needs for a large

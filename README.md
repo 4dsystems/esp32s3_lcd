@@ -25,8 +25,8 @@ Example:
 ``` yml
 dependencies:
   # Define a dependency from a Git repository
-  esp32s3_4dlcd:
-    git: https://github.com/4dsystems/esp32s3_4dlcd.git
+  esp32s3_lcd:
+    git: https://github.com/4dsystems/esp32s3_lcd.git
 ```
 
 Add `version` to indicate which branch or tag to use:
@@ -34,8 +34,8 @@ Add `version` to indicate which branch or tag to use:
 ``` yml
 dependencies:
   # Define a dependency from a Git repository
-  esp32s3_4dlcd:
-    git: https://github.com/4dsystems/esp32s3_4dlcd.git
+  esp32s3_lcd:
+    git: https://github.com/4dsystems/esp32s3_lcd.git
     version: test # define the branch/tag
 ```
 
