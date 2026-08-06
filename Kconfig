@@ -99,6 +99,16 @@ config ESP32S3_LCD_ALLOW_NOPSRAM
       framebuffer. Enable this only if you have verified your application's framebuffers
       and other allocations fit in internal RAM alongside WiFi/BT on SPI/QSPI displays.
 
+config ESP32S3_RGB_BYTE_SWAP
+    bool "Swap RGB565 data bus byte order"
+    depends on ESP32S3_LCD_43 || ESP32S3_LCD_50 || ESP32S3_LCD_70 || ESP32S3_LCD_90
+    default y
+    help
+      Re-orders the D0..D15 data bus GPIO assignment to swap the high and
+      low byte of each RGB565 pixel to match SPI/QSPI byte order requirement.
+      Disable this only if colors appear swapped or scrambled on your RGB panel.
+      Applies to the RGB display series only; not offered for SPI/QSPI variants.
+
 config ESP32S3_4D_DISPLAY_NAME
     string
     default "gen4-ESP32-24" if ESP32S3_LCD_24

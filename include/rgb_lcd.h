@@ -24,20 +24,21 @@ extern "C" {
 #define LCD_PCLK_GPIO_NUM        GPIO_NUM_42
 #define LCD_DISP_EN_GPIO_NUM     GPIO_NUM_NC    // DISP tied to VDD-3V3 on this board, no GPIO control
 
+#if !defined(CONFIG_ESP32S3_RGB_BYTE_SWAP)
 // Data bus order matches esp_lcd_rgb_panel_config_t.data_gpio_nums[0..15]
 // (D0..D15), taken directly off the schematic's RGB565 pin table.
-/*
 #define LCD_DATA_GPIO_NUMS { GPIO_NUM_8, GPIO_NUM_3, GPIO_NUM_46, GPIO_NUM_9, \
                                GPIO_NUM_1, GPIO_NUM_5, GPIO_NUM_6, GPIO_NUM_7, \
                                GPIO_NUM_15, GPIO_NUM_16, GPIO_NUM_4, GPIO_NUM_45, \
                                GPIO_NUM_48, GPIO_NUM_47, GPIO_NUM_21, GPIO_NUM_14 }
-*/
 
+#else
 // This data bus order is deliberately re-configured to match the endianess needed by SPI/QSPI variants
 #define LCD_DATA_GPIO_NUMS { GPIO_NUM_15, GPIO_NUM_16, GPIO_NUM_4, GPIO_NUM_45, \
                               GPIO_NUM_48, GPIO_NUM_47, GPIO_NUM_21, GPIO_NUM_14, \
                               GPIO_NUM_8, GPIO_NUM_3, GPIO_NUM_46, GPIO_NUM_9, \
                               GPIO_NUM_1, GPIO_NUM_5, GPIO_NUM_6, GPIO_NUM_7 }
+#endif
 
 // Timing parameters are panel-size specific and come from the LCD's own
 // datasheet, not this schematic - see the README's 4DLCD-xxxxxx datasheet
