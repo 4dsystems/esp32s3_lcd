@@ -131,7 +131,7 @@ extern "C" {
         },                                                            \
         .data_width = 16,                                             \
         .in_color_format = LCD_COLOR_FMT_RGB565,                      \
-        .num_fbs = 1,                                                 \
+        .num_fbs = 2,                                                 \
         .bounce_buffer_size_px = 10 * CONFIG_ESP32S3_4D_LCD_WIDTH,    \
         .dma_burst_size = 64,                                         \
         .hsync_gpio_num = LCD_HSYNC_GPIO_NUM,                         \
