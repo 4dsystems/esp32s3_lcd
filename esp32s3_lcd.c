@@ -27,6 +27,8 @@ static const char *TAG = "esp32s3_lcd";
 
 #if !defined(CONFIG_LCD_INTERFACE_RGB)
 
+esp_lcd_panel_io_handle_t io_handle = NULL;
+
 static esp_err_t esp32s3_lcd_del(esp_lcd_panel_t *panel);
 static esp_err_t esp32s3_lcd_reset(esp_lcd_panel_t *panel);
 static esp_err_t esp32s3_lcd_init(esp_lcd_panel_t *panel);
@@ -521,7 +523,6 @@ esp_err_t esp32s3_lcd_full_init(esp_lcd_panel_handle_t *ret_panel)
     ESP_RETURN_ON_FALSE(ret_panel, ESP_ERR_INVALID_ARG, TAG, "invalid argument");
 
 #if !defined(CONFIG_LCD_INTERFACE_RGB)
-    esp_lcd_panel_io_handle_t io_handle = NULL;
 
     // Caller is responsible for the SPI host not already being initialized elsewhere;
     // this component does not track bus ownership across displays/peripherals.
@@ -558,10 +559,11 @@ err:
         esp_lcd_panel_del(panel_handle);
     }
 #if !defined(CONFIG_LCD_INTERFACE_RGB)
-    if (io_handle) {
-        esp_lcd_panel_io_del(io_handle);
-    }
     spi_bus_free(LCD_HOST);
 #endif
     return ret;
+}
+
+esp_err_t esp32s3_lcd_io_register_event_callbacks(const esp_lcd_panel_io_callbacks_t *cbs, void *user_ctx) {
+    return esp_lcd_panel_io_register_event_callbacks(io_handle, cbs, user_ctx);
 }
