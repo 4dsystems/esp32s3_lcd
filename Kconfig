@@ -1,4 +1,4 @@
-menu "4D Systems ESP32-S3 4D LCD Display Selection"
+menu "4D Systems ESP32-S3 Display Selection"
 
 choice
     prompt "Select your display series"
@@ -98,5 +98,20 @@ config ESP32S3_LCD_ALLOW_NOPSRAM
       By default this component requires PSRAM regardless of the needs for a large
       framebuffer. Enable this only if you have verified your application's framebuffers
       and other allocations fit in internal RAM alongside WiFi/BT on SPI/QSPI displays.
+
+config ESP32S3_4D_DISPLAY_NAME
+    string
+    default "gen4-ESP32-24" if ESP32S3_LCD_24
+    default "gen4-ESP32-28" if ESP32S3_LCD_28
+    default "gen4-ESP32-32" if ESP32S3_LCD_32
+    default "gen4-ESP32-35" if ESP32S3_LCD_35
+    default "gen4-ESP32Q-43" if ESP32S3_LCD_43Q
+    default "gen4-ESP32-43" if ESP32S3_LCD_43
+    default "gen4-ESP32-50" if ESP32S3_LCD_50
+    default "gen4-ESP32-70" if ESP32S3_LCD_70
+    default "ESP32-90" if ESP32S3_LCD_90
+    help
+      Internal string identifier derived from the selected display series.
+      Not user-editable.
 
 endmenu
