@@ -525,7 +525,7 @@ esp_err_t esp32s3_lcd_full_init(esp_lcd_panel_handle_t *ret_panel)
 
     // Caller is responsible for the SPI host not already being initialized elsewhere;
     // this component does not track bus ownership across displays/peripherals.
-    spi_bus_config_t buscfg = ESP32S3_LCD_BUS_SPI_CONFIG(LCD_WIDTH * 80 * sizeof(uint16_t));
+    spi_bus_config_t buscfg = ESP32S3_LCD_BUS_SPI_CONFIG(CONFIG_ESP32S3_4D_LCD_WIDTH * 80 * sizeof(uint16_t));
     ESP_RETURN_ON_ERROR(spi_bus_initialize(LCD_HOST, &buscfg, SPI_DMA_CH_AUTO), TAG, "spi bus init failed");
 
     esp_lcd_panel_io_spi_config_t io_config = ESP32S3_LCD_IO_SPI_CONFIG(NULL, NULL);

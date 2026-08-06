@@ -11,8 +11,6 @@ extern "C" {
 // Resolution and bits per pixel for 4D Systems ESP32-S3 RGB LCD models
 // All RGB-interface panels (4.3", 5.0", 7.0", 9.0") share the same 800x480
 // resolution - only the physical size/density and timing parameters differ.
-#define LCD_WIDTH               800
-#define LCD_HEIGHT              480
 #define LCD_BITS_PER_PIXEL      16      // RGB565 over the 16-bit parallel bus
 
 // Pin definitions, gen4-ESP32-RGB-REV1.1
@@ -116,8 +114,8 @@ extern "C" {
         .clk_src = LCD_CLK_SRC_PLL160M,                               \
         .timings = {                                                  \
             .pclk_hz = LCD_PCLK_HZ,                                   \
-            .h_res = LCD_WIDTH,                                       \
-            .v_res = LCD_HEIGHT,                                      \
+            .h_res = CONFIG_ESP32S3_4D_LCD_WIDTH,                     \
+            .v_res = CONFIG_ESP32S3_4D_LCD_HEIGHT,                    \
             .hsync_pulse_width = LCD_HSYNC_PULSE_WIDTH,               \
             .hsync_back_porch = LCD_HSYNC_BACK_PORCH,                 \
             .hsync_front_porch = LCD_HSYNC_FRONT_PORCH,               \
@@ -134,7 +132,7 @@ extern "C" {
         .data_width = 16,                                             \
         .in_color_format = LCD_COLOR_FMT_RGB565,                      \
         .num_fbs = 1,                                                 \
-        .bounce_buffer_size_px = 10 * LCD_WIDTH,                      \
+        .bounce_buffer_size_px = 10 * CONFIG_ESP32S3_4D_LCD_WIDTH,    \
         .dma_burst_size = 64,                                         \
         .hsync_gpio_num = LCD_HSYNC_GPIO_NUM,                         \
         .vsync_gpio_num = LCD_VSYNC_GPIO_NUM,                         \

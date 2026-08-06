@@ -11,16 +11,10 @@ extern "C" {
 
 // Resolution and bits per pixel for different 4D Systems ESP32-S3 LCD models
 #if defined(CONFIG_ESP32S3_LCD_35)
-#define LCD_WIDTH               320
-#define LCD_HEIGHT              480
 #define LCD_BITS_PER_PIXEL      18
 #elif defined(CONFIG_ESP32S3_LCD_43Q)
-#define LCD_WIDTH               480
-#define LCD_HEIGHT              272
 #define LCD_BITS_PER_PIXEL      16
 #else
-#define LCD_WIDTH               240
-#define LCD_HEIGHT              320
 #define LCD_BITS_PER_PIXEL      16
 #endif
 

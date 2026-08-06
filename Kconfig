@@ -114,4 +114,32 @@ config ESP32S3_4D_DISPLAY_NAME
       Internal string identifier derived from the selected display series.
       Not user-editable.
 
+config ESP32S3_4D_LCD_WIDTH
+    int
+    default 240 if ESP32S3_LCD_24
+    default 240 if ESP32S3_LCD_28
+    default 240 if ESP32S3_LCD_32
+    default 320 if ESP32S3_LCD_35
+    default 480 if ESP32S3_LCD_43Q
+    default 800 if ESP32S3_LCD_43
+    default 800 if ESP32S3_LCD_50
+    default 800 if ESP32S3_LCD_70
+    default 800 if ESP32S3_LCD_90
+    help
+      LCD horizontal resolution in pixels, derived from selected display series.
+
+config ESP32S3_4D_LCD_HEIGHT
+    int
+    default 320 if ESP32S3_LCD_24
+    default 320 if ESP32S3_LCD_28
+    default 320 if ESP32S3_LCD_32
+    default 480 if ESP32S3_LCD_35
+    default 272 if ESP32S3_LCD_43Q
+    default 480 if ESP32S3_LCD_43
+    default 480 if ESP32S3_LCD_50
+    default 480 if ESP32S3_LCD_70
+    default 480 if ESP32S3_LCD_90
+    help
+      LCD vertical resolution in pixels, derived from selected display series.
+
 endmenu
