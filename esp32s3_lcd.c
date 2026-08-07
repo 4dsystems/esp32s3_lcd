@@ -229,7 +229,7 @@ static const esp32s3_lcd_init_cmd_t vendor_specific_init_default[] = {
     {0xff, (uint8_t []) {0xa5}, 1, 0},
     {0xe7, (uint8_t []) {0x10}, 1, 0},
     {0x35, (uint8_t []) {0x00}, 1, 0},
-    {0x36, (uint8_t []) {0xc0}, 1, 0},
+    {0x36, (uint8_t []) {0x00}, 1, 0},
     {0x3A, (uint8_t []) {0x01}, 1, 0},
     {0x40, (uint8_t []) {0x01}, 1, 0},
     {0x41, (uint8_t []) {0x01}, 1, 0},
