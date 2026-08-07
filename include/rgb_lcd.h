@@ -69,7 +69,7 @@ extern "C" {
 #define LCD_VSYNC_IDLE_LOW       true
 #define LCD_DE_IDLE_HIGH         true
 #elif defined(CONFIG_ESP32S3_LCD_70)
-#define LCD_PCLK_HZ              (18 * 1000 * 1000)
+#define LCD_PCLK_HZ              (16 * 1000 * 1000)
 #define LCD_HSYNC_PULSE_WIDTH    50
 #define LCD_HSYNC_BACK_PORCH     32
 #define LCD_HSYNC_FRONT_PORCH    1
