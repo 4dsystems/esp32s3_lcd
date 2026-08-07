@@ -172,7 +172,7 @@ esp_err_t esp32s3_lcd_full_init(esp_lcd_panel_handle_t *ret_panel);
  * @param[out] result  error or success based on `esp_lcd_panel_io_register_event_callbacks`
  * @return esp_err_t
  */
-esp_err_t esp32s3_lcd_io_register_event_callbacks(const esp_lcd_panel_io_callbacks_t *cbs, void *user_ctx);
+esp_err_t esp32s3_lcd_register_event_callbacks(const esp_lcd_panel_io_callbacks_t *cbs, void *user_ctx);
 
 #ifdef __cplusplus
 }

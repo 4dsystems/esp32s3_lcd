@@ -25,6 +25,8 @@
 
 static const char *TAG = "esp32s3_lcd";
 
+esp_lcd_panel_handle_t panel_handle = NULL;
+
 #if !defined(CONFIG_LCD_INTERFACE_RGB)
 
 esp_lcd_panel_io_handle_t io_handle = NULL;
@@ -518,7 +520,6 @@ esp_err_t backlight_set(uint8_t brightness)
 esp_err_t esp32s3_lcd_full_init(esp_lcd_panel_handle_t *ret_panel)
 {
     esp_err_t ret = ESP_OK;
-    esp_lcd_panel_handle_t panel_handle = NULL;
 
     ESP_RETURN_ON_FALSE(ret_panel, ESP_ERR_INVALID_ARG, TAG, "invalid argument");
 
@@ -564,6 +565,12 @@ err:
     return ret;
 }
 
-esp_err_t esp32s3_lcd_io_register_event_callbacks(const esp_lcd_panel_io_callbacks_t *cbs, void *user_ctx) {
+#if defined(CONFIG_LCD_INTERFACE_RGB)
+esp_err_t esp32s3_lcd_register_event_callbacks(const esp_lcd_rgb_panel_event_callbacks_t *cbs, void *user_ctx) {
+    return esp_lcd_rgb_panel_register_event_callbacks(panel_handle, cbs, user_ctx);
+}
+#else // SPI/QSPI
+esp_err_t esp32s3_lcd_register_event_callbacks(const esp_lcd_panel_io_callbacks_t *cbs, void *user_ctx) {
     return esp_lcd_panel_io_register_event_callbacks(io_handle, cbs, user_ctx);
 }
+#endif
