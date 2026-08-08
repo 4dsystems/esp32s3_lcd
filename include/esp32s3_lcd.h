@@ -165,7 +165,15 @@ esp_err_t backlight_set(uint8_t brightness);
  */
 esp_err_t esp32s3_lcd_full_init(esp_lcd_panel_handle_t *ret_panel);
 
-
+#if defined(CONFIG_LCD_INTERFACE_RGB)
+/**
+ * @brief Assign callbacks to the panel_handle using `esp_lcd_rgb_panel_register_event_callbacks`
+ *
+ * @param[out] result  error or success based on `esp_lcd_rgb_panel_register_event_callbacks`
+ * @return esp_err_t
+ */
+esp_err_t esp32s3_lcd_register_event_callbacks(const esp_lcd_rgb_panel_event_callbacks_t *cbs, void *user_ctx);
+#else
 /**
  * @brief Assign callbacks to the io_handle using `esp_lcd_panel_io_register_event_callbacks`
  *
@@ -173,6 +181,7 @@ esp_err_t esp32s3_lcd_full_init(esp_lcd_panel_handle_t *ret_panel);
  * @return esp_err_t
  */
 esp_err_t esp32s3_lcd_register_event_callbacks(const esp_lcd_panel_io_callbacks_t *cbs, void *user_ctx);
+#endif
 
 #ifdef __cplusplus
 }
