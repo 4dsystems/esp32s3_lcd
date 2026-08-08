@@ -50,6 +50,16 @@ extern "C" {
 #define LCD_HOST    SPI3_HOST
 #endif
 
+// Touch related parameters
+#define LCD_TOUCH_SWAP_MAX_XY    0
+#if defined(CONFIG_ESP32S3_LCD_43Q)
+#define LCD_TOUCH_SWAP_XY        1 // only 4.3QSPI needs swapping
+#else
+#define LCD_TOUCH_SWAP_XY        0
+#endif
+#define LCD_TOUCH_MIRROR_X       0
+#define LCD_TOUCH_MIRROR_Y       0
+
 #if defined(__cplusplus)
 }
 #endif

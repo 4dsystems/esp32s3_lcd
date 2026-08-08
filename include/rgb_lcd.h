@@ -56,6 +56,10 @@ extern "C" {
 #define LCD_HSYNC_IDLE_LOW       false
 #define LCD_VSYNC_IDLE_LOW       true
 #define LCD_DE_IDLE_HIGH         false
+#define LCD_TOUCH_SWAP_MAX_XY    0
+#define LCD_TOUCH_SWAP_XY        1
+#define LCD_TOUCH_MIRROR_X       0
+#define LCD_TOUCH_MIRROR_Y       0
 #elif defined(CONFIG_ESP32S3_LCD_50)
 #define LCD_PCLK_HZ              (16 * 1000 * 1000)
 #define LCD_HSYNC_PULSE_WIDTH    4
@@ -68,6 +72,10 @@ extern "C" {
 #define LCD_HSYNC_IDLE_LOW       true
 #define LCD_VSYNC_IDLE_LOW       true
 #define LCD_DE_IDLE_HIGH         true
+#define LCD_TOUCH_SWAP_MAX_XY    1
+#define LCD_TOUCH_SWAP_XY        1
+#define LCD_TOUCH_MIRROR_X       1
+#define LCD_TOUCH_MIRROR_Y       0
 #elif defined(CONFIG_ESP32S3_LCD_70)
 #define LCD_PCLK_HZ              (16 * 1000 * 1000)
 #define LCD_HSYNC_PULSE_WIDTH    50
@@ -80,6 +88,10 @@ extern "C" {
 #define LCD_HSYNC_IDLE_LOW       false
 #define LCD_VSYNC_IDLE_LOW       true
 #define LCD_DE_IDLE_HIGH         false
+#define LCD_TOUCH_SWAP_MAX_XY    0
+#define LCD_TOUCH_SWAP_XY        1
+#define LCD_TOUCH_MIRROR_X       0
+#define LCD_TOUCH_MIRROR_Y       0
 #elif defined(CONFIG_ESP32S3_LCD_90)
 #define LCD_PCLK_HZ              (16 * 1000 * 1000)
 #define LCD_HSYNC_PULSE_WIDTH    50
@@ -92,6 +104,10 @@ extern "C" {
 #define LCD_HSYNC_IDLE_LOW       false
 #define LCD_VSYNC_IDLE_LOW       true
 #define LCD_DE_IDLE_HIGH         false
+#define LCD_TOUCH_SWAP_MAX_XY    0
+#define LCD_TOUCH_SWAP_XY        1
+#define LCD_TOUCH_MIRROR_X       0
+#define LCD_TOUCH_MIRROR_Y       0
 #else
 #error "No valid 4D Systems RGB LCD model defined"
 #endif
