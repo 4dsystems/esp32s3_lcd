@@ -50,15 +50,21 @@ extern "C" {
 #define LCD_HOST    SPI3_HOST
 #endif
 
-// Touch related parameters
+// Touch related parameters FT5446 series
 #define LCD_TOUCH_SWAP_MAX_XY    0
 #if defined(CONFIG_ESP32S3_LCD_43Q)
 #define LCD_TOUCH_SWAP_XY        1 // only 4.3QSPI needs swapping
-#else
-#define LCD_TOUCH_SWAP_XY        0
-#endif
 #define LCD_TOUCH_MIRROR_X       0
 #define LCD_TOUCH_MIRROR_Y       0
+#elif defined(CONFIG_ESP32S3_LCD_35)
+#define LCD_TOUCH_SWAP_XY        0
+#define LCD_TOUCH_MIRROR_X       0
+#define LCD_TOUCH_MIRROR_Y       1
+#else // 2.4-inch and 3.2-inch
+#define LCD_TOUCH_SWAP_XY        0
+#define LCD_TOUCH_MIRROR_X       0
+#define LCD_TOUCH_MIRROR_Y       0
+#endif
 
 #if defined(__cplusplus)
 }
