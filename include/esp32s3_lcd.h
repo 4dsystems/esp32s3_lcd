@@ -39,11 +39,16 @@
 #include "esp_check.h"
 #include "driver/ledc.h"
 
+#include "esp_lcd_touch.h"
+
 #if defined(CONFIG_LCD_INTERFACE_RGB)
 #include "rgb_lcd.h"
 #else // CONFIG_LCD_INTERFACE_QSPI or CONFIG_LCD_INTERFACE_SPI
 #include "spi_lcd.h"
 #endif // LCD_INTERFACE
+
+#define LCD_TOUCH_AREA_MAX_X        (CONFIG_ESP32S3_4D_LCD_WIDTH - 1)
+#define LCD_TOUCH_AREA_MAX_Y        (CONFIG_ESP32S3_4D_LCD_HEIGHT - 1)
 
 #ifdef __cplusplus
 extern "C" {
@@ -154,6 +159,23 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
     }
 #endif // CONFIG_LCD_INTERFACE
 
+/**
+ * @brief Touch IO configuration structure
+ *
+ */
+#define ESP32S3_LCD_TOUCH_IO_I2C_CONFIG()                   \
+    {                                                       \
+        .dev_addr = ESP_LCD_TOUCH_IO_I2C_FT5x06_ADDRESS,    \
+        .scl_speed_hz = 100000,                             \
+        .control_phase_bytes = 1,                           \
+        .dc_bit_offset = 0,                                 \
+        .lcd_cmd_bits = 8,                                  \
+        .flags =                                            \
+        {                                                   \
+            .disable_control_phase = 1,                     \
+        }                                                   \
+    }
+
 esp_err_t backlight_init(void);
 esp_err_t backlight_set(uint8_t brightness);
 
@@ -182,6 +204,14 @@ esp_err_t esp32s3_lcd_register_event_callbacks(const esp_lcd_rgb_panel_event_cal
  */
 esp_err_t esp32s3_lcd_register_event_callbacks(const esp_lcd_panel_io_callbacks_t *cbs, void *user_ctx);
 #endif
+
+/**
+ * @brief Bring up I2C touch in one call.
+ *
+ * @param[out] ret_panel  Returned touch panel handle, ready for esp_lcd_touch functions
+ * @return esp_err_t
+ */
+esp_err_t esp32s3_lcd_touch_init(esp_lcd_touch_handle_t *tp);
 
 #ifdef __cplusplus
 }

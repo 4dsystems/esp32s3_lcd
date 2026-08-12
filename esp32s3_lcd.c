@@ -18,8 +18,11 @@
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_commands.h"
 #include "driver/gpio.h"
+#include "driver/i2c_master.h"
 #include "esp_log.h"
 #include "esp_check.h"
+
+#include "esp_lcd_touch_ft5x06.h"
 
 #include "esp32s3_lcd.h"
 
@@ -574,3 +577,76 @@ esp_err_t esp32s3_lcd_register_event_callbacks(const esp_lcd_panel_io_callbacks_
     return esp_lcd_panel_io_register_event_callbacks(io_handle, cbs, user_ctx);
 }
 #endif
+
+
+esp_err_t esp32s3_lcd_touch_init(esp_lcd_touch_handle_t *tp) {
+    esp_err_t ret = ESP_OK;
+
+    /* I2C bus configuration — common for all FT5x06 displays */
+    i2c_master_bus_handle_t i2c_bus = NULL;
+    i2c_master_bus_config_t bus_config = {
+        .clk_source = I2C_CLK_SRC_DEFAULT,
+        .i2c_port = I2C_NUM_0,
+#if defined(CONFIG_LCD_INTERFACE_RGB) || defined(CONFIG_LCD_INTERFACE_QSPI)
+        .scl_io_num = GPIO_NUM_18,
+        .sda_io_num = GPIO_NUM_17,
+#else
+        .scl_io_num = GPIO_NUM_9,
+        .sda_io_num = GPIO_NUM_10,
+#endif
+        .glitch_ignore_cnt = 7,
+        .flags.enable_internal_pullup = true,
+    };
+
+    /* Initialize the I2C bus */
+    ret = i2c_new_master_bus(&bus_config, &i2c_bus);
+    if (ret != ESP_OK) {
+        goto err_bus;
+    }
+
+    esp_lcd_panel_io_i2c_config_t io_config = ESP32S3_LCD_TOUCH_IO_I2C_CONFIG();
+    io_config.scl_speed_hz = 400000;
+
+    esp_lcd_panel_io_handle_t io_handle = NULL;
+    ret = esp_lcd_new_panel_io_i2c(i2c_bus, &io_config, &io_handle);
+    if (ret != ESP_OK) {
+        goto err_io;
+    }
+
+    /* Touch panel configuration — no mirroring in driver;
+       Y-flip for 3.2" panels is handled in software in EwBspTouchGetEvents */
+    esp_lcd_touch_config_t tp_cfg = {
+#if defined(LCD_TOUCH_SWAP_MAX_XY) && (LCD_TOUCH_SWAP_MAX_XY == 1)
+        .x_max = LCD_TOUCH_AREA_MAX_Y,
+        .y_max = LCD_TOUCH_AREA_MAX_X,
+#else
+        .x_max = LCD_TOUCH_AREA_MAX_X,
+        .y_max = LCD_TOUCH_AREA_MAX_Y,
+#endif
+        .rst_gpio_num = -1,
+        .int_gpio_num = -1,
+        .levels = {
+            .reset = 0,
+            .interrupt = 0,
+        },
+        .flags = {
+            .swap_xy = LCD_TOUCH_SWAP_XY,
+            .mirror_x = LCD_TOUCH_MIRROR_X,
+            .mirror_y = LCD_TOUCH_MIRROR_Y,
+        },
+    };
+
+    ret = esp_lcd_touch_new_i2c_ft5x06(io_handle, &tp_cfg, tp);
+    if (ret != ESP_OK) {
+        goto err_touch;
+    }
+
+    return ESP_OK;
+
+err_touch:
+    esp_lcd_panel_io_del(io_handle);
+err_io:
+    i2c_del_master_bus(i2c_bus);
+err_bus:
+    return ret;
+}
