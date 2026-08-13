@@ -40,6 +40,7 @@
 #include "driver/ledc.h"
 
 #include "esp_lcd_touch.h"
+#include "esp_io_expander.h"
 
 #if defined(CONFIG_LCD_INTERFACE_RGB)
 #include "rgb_lcd.h"
@@ -204,13 +205,38 @@ esp_err_t esp32s3_lcd_register_event_callbacks(const esp_lcd_rgb_panel_event_cal
 esp_err_t esp32s3_lcd_register_event_callbacks(const esp_lcd_panel_io_callbacks_t *cbs, void *user_ctx);
 #endif
 
+#if defined(CONFIG_LCD_INTERFACE_RGB)
 /**
- * @brief Bring up I2C touch in one call.
+ * @brief Get the TCA9554 IO expander handle used for touch RST/INT, creating it on first call
  *
- * @param[out] ret_panel  Returned touch panel handle, ready for esp_lcd_touch functions
+ * Creates the expander on the first call. Every later call - from here, from
+ * esp32s3_lcd_touch_init(), or standalone before/after either - just hands
+ * back the same instance instead of creating a second one. i2c_bus is only
+ * used (and required) on that first call; it's ignored once the instance
+ * already exists.
+ *
+ * @param[in]  i2c_bus         Already-initialized I2C bus the expander is on
+ * @param[out] out_io_expander Returned expander handle. May be NULL if the caller
+ *                              only needs the side effect of ensuring it's created
  * @return esp_err_t
  */
-esp_err_t esp32s3_lcd_touch_init(esp_lcd_touch_handle_t *tp);
+esp_err_t esp32s3_lcd_io_expander_init(i2c_master_bus_handle_t i2c_bus, esp_io_expander_handle_t *out_io_expander);
+#endif
+
+/**
+ * @brief Bring up I2C touch in one call
+ *
+ * Detects FT5x06 or GT967 on the given bus and constructs the matching
+ * esp_lcd_touch driver. On CONFIG_LCD_INTERFACE_RGB boards, also obtains
+ * the TCA9554 IO expander via esp32s3_lcd_io_expander_init() and runs the
+ * RST/INT reset and address-selection sequence for GT967 through it.
+ *
+ * @param[in]  i2c_bus  Already-initialized I2C bus the touch controller is on -
+ *                       not created or deleted by this function
+ * @param[out] tp       Returned touch panel handle, ready for esp_lcd_touch functions
+ * @return esp_err_t
+ */
+esp_err_t esp32s3_lcd_touch_init(i2c_master_bus_handle_t i2c_bus, esp_lcd_touch_handle_t *tp);
 
 #ifdef __cplusplus
 }

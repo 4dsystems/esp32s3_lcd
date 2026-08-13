@@ -580,18 +580,42 @@ esp_err_t esp32s3_lcd_register_event_callbacks(const esp_lcd_panel_io_callbacks_
 }
 #endif
 
+#if defined(CONFIG_LCD_INTERFACE_RGB)
+static esp_io_expander_handle_t s_io_expander = NULL;
 
-esp_err_t esp32s3_lcd_touch_init(esp_lcd_touch_handle_t *tp) {
+esp_err_t esp32s3_lcd_io_expander_init(i2c_master_bus_handle_t i2c_bus, esp_io_expander_handle_t *out_io_expander) {
+    if (s_io_expander != NULL) {
+        if (out_io_expander) {
+            *out_io_expander = s_io_expander;
+        }
+        return ESP_OK;
+    }
+
+    if (i2c_bus == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    esp_err_t ret = esp_io_expander_new_i2c_tca9554(i2c_bus, ESP_IO_EXPANDER_I2C_TCA9554A_ADDRESS_001, &s_io_expander);
+    if (ret != ESP_OK) {
+        return ret;
+    }
+
+    if (out_io_expander) {
+        *out_io_expander = s_io_expander;
+    }
+    return ESP_OK;
+}
+#endif
+
+/* i2c_bus: caller's already-initialized bus, not created or deleted here.
+   On CONFIG_LCD_INTERFACE_RGB boards, obtains the IO expander itself via
+   esp32s3_lcd_io_expander_init() - creates it on first call, reuses it on
+   every later one, regardless of who else has already called that. */
+esp_err_t esp32s3_lcd_touch_init(i2c_master_bus_handle_t i2c_bus, esp_lcd_touch_handle_t *tp) {
     esp_err_t ret = ESP_OK;
 
-    /* I2C bus configuration — common for all FT5x06 displays */
-    i2c_master_bus_handle_t i2c_bus = NULL;
-    i2c_master_bus_config_t bus_config = ESP3233_LCD_ONBOARD_I2C_CONFIG();
-
-    /* Initialize the I2C bus */
-    ret = i2c_new_master_bus(&bus_config, &i2c_bus);
-    if (ret != ESP_OK) {
-        goto err_bus;
+    if (i2c_bus == NULL) {
+        return ESP_ERR_INVALID_ARG;
     }
 
 #if defined(CONFIG_LCD_INTERFACE_RGB)
@@ -601,9 +625,9 @@ esp_err_t esp32s3_lcd_touch_init(esp_lcd_touch_handle_t *tp) {
        the driver's own reset() can't reach these pins (rst_gpio_num/
        int_gpio_num are native GPIO numbers, not expander pins). */
     esp_io_expander_handle_t io_expander = NULL;
-    ret = esp_io_expander_new_i2c_tca9554(i2c_bus, ESP_IO_EXPANDER_I2C_TCA9554A_ADDRESS_001, &io_expander);
+    ret = esp32s3_lcd_io_expander_init(i2c_bus, &io_expander);
     if (ret != ESP_OK) {
-        goto err_io;
+        return ret;
     }
 
     esp_io_expander_set_dir(io_expander, IO_EXPANDER_PIN_NUM_6 | IO_EXPANDER_PIN_NUM_7, IO_EXPANDER_OUTPUT);
@@ -651,13 +675,13 @@ esp_err_t esp32s3_lcd_touch_init(esp_lcd_touch_handle_t *tp) {
 
         ret = esp_lcd_new_panel_io_i2c(i2c_bus, &io_config, &io_handle);
         if (ret != ESP_OK) {
-            goto err_io;
+            return ret;
         }
 
         ret = esp_lcd_touch_new_i2c_ft5x06(io_handle, &tp_cfg, tp);
         if (ret != ESP_OK) {
             esp_lcd_panel_io_del(io_handle);
-            goto err_io;
+            return ret;
         }
 
         return ESP_OK;
@@ -675,7 +699,7 @@ esp_err_t esp32s3_lcd_touch_init(esp_lcd_touch_handle_t *tp) {
 
     ret = esp_lcd_new_panel_io_i2c(i2c_bus, &gt967_io_config, &io_handle);
     if (ret != ESP_OK) {
-        goto err_io;
+        return ret;
     }
 
     esp_lcd_touch_io_gt911_config_t gt911_addr_cfg = {
@@ -686,13 +710,8 @@ esp_err_t esp32s3_lcd_touch_init(esp_lcd_touch_handle_t *tp) {
     ret = esp_lcd_touch_new_i2c_gt911(io_handle, &tp_cfg, tp);
     if (ret != ESP_OK) {
         esp_lcd_panel_io_del(io_handle);
-        goto err_io;
+        return ret;
     }
 
     return ESP_OK;
-
-err_io:
-    i2c_del_master_bus(i2c_bus);
-err_bus:
-    return ret;
 }
