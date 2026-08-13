@@ -74,6 +74,19 @@ config ESP32S3_LCD_SPI3
       Select this if you wish to use SPI3 with the SPI/QSPI LCD
 endchoice
 
+choice
+    prompt "Select the I2C host you want to use for onboard components"
+
+config ESP32S3_LCD_I2C0
+    bool "I2C0"
+    help
+      Select this if you wish to use I2C0 for onboard I2C components
+
+config ESP32S3_LCD_I2C1
+    bool "I2C1"
+    help
+      Select this if you wish to use I2C1 for onboard I2C components
+endchoice
 
 config LCD_INTERFACE_SPI
     bool

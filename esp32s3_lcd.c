@@ -586,14 +586,7 @@ esp_err_t esp32s3_lcd_touch_init(esp_lcd_touch_handle_t *tp) {
 
     /* I2C bus configuration — common for all FT5x06 displays */
     i2c_master_bus_handle_t i2c_bus = NULL;
-    i2c_master_bus_config_t bus_config = {
-        .clk_source = I2C_CLK_SRC_DEFAULT,
-        .i2c_port = I2C_NUM_0,
-        .scl_io_num = LCD_TOUCH_SCL_GPIO_NUM,
-        .sda_io_num = LCD_TOUCH_SDA_GPIO_NUM,
-        .glitch_ignore_cnt = 7,
-        .flags.enable_internal_pullup = true,
-    };
+    i2c_master_bus_config_t bus_config = ESP3233_LCD_ONBOARD_I2C_CONFIG();
 
     /* Initialize the I2C bus */
     ret = i2c_new_master_bus(&bus_config, &i2c_bus);
@@ -653,7 +646,7 @@ esp_err_t esp32s3_lcd_touch_init(esp_lcd_touch_handle_t *tp) {
     };
 
     if (ft5x06_present) {
-        esp_lcd_panel_io_i2c_config_t io_config = ESP32S3_LCD_TOUCH_IO_I2C_CONFIG();
+        esp_lcd_panel_io_i2c_config_t io_config = ESP_LCD_TOUCH_IO_I2C_FT5x06_CONFIG();
         io_config.scl_speed_hz = 400000;
 
         ret = esp_lcd_new_panel_io_i2c(i2c_bus, &io_config, &io_handle);

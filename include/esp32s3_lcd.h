@@ -47,6 +47,12 @@
 #include "spi_lcd.h"
 #endif // LCD_INTERFACE
 
+#if defined(CONFIG_ESP32S3_LCD_I2C0)
+#define LCD_I2C_NUM     I2C_NUM_0
+#else // CONFIG_ESP32S3_LCD_I2C1
+#define LCD_I2C_NUM     I2C_NUM_1
+#endif
+
 #define LCD_TOUCH_AREA_MAX_X        (CONFIG_ESP32S3_4D_LCD_WIDTH - 1)
 #define LCD_TOUCH_AREA_MAX_Y        (CONFIG_ESP32S3_4D_LCD_HEIGHT - 1)
 
@@ -100,7 +106,7 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
  *
  */
 #if defined(CONFIG_LCD_INTERFACE_SPI)
-#define ESP32S3_LCD_BUS_SPI_CONFIG(max_trans_sz)              \
+#define ESP32S3_LCD_BUS_SPI_CONFIG(max_trans_sz)                \
     {                                                           \
         .sclk_io_num = LCD_SPI_SCLK_GPIO_NUM,                   \
         .mosi_io_num = LCD_SPI_MOSI_GPIO_NUM,                   \
@@ -110,7 +116,7 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
         .max_transfer_sz = max_trans_sz,                        \
     }
 #elif defined(CONFIG_LCD_INTERFACE_QSPI)
-#define ESP32S3_LCD_BUS_SPI_CONFIG(max_trans_sz)              \
+#define ESP32S3_LCD_BUS_SPI_CONFIG(max_trans_sz)                \
     {                                                           \
         .sclk_io_num = LCD_SPI_SCLK_GPIO_NUM,                   \
         .data0_io_num = LCD_QSPI_DAT0_GPIO_NUM,                 \
@@ -131,7 +137,7 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
  *
  */
 #if defined(CONFIG_LCD_INTERFACE_SPI)
-#define ESP32S3_LCD_IO_SPI_CONFIG(callback, callback_ctx)     \
+#define ESP32S3_LCD_IO_SPI_CONFIG(callback, callback_ctx)       \
     {                                                           \
         .cs_gpio_num = LCD_SPI_CS_GPIO_NUM,                     \
         .dc_gpio_num = LCD_SPI_DC_GPIO_NUM,                     \
@@ -144,7 +150,7 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
         .lcd_param_bits = 8,                                    \
     }
 #else // CONFIG_LCD_INTERFACE_QSPI
-#define ESP32S3_LCD_IO_SPI_CONFIG(callback, callback_ctx)     \
+#define ESP32S3_LCD_IO_SPI_CONFIG(callback, callback_ctx)       \
     {                                                           \
         .cs_gpio_num = LCD_SPI_CS_GPIO_NUM,                     \
         .dc_gpio_num = LCD_SPI_DC_GPIO_NUM,                     \
@@ -159,21 +165,14 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
     }
 #endif // CONFIG_LCD_INTERFACE
 
-/**
- * @brief Touch IO configuration structure
- *
- */
-#define ESP32S3_LCD_TOUCH_IO_I2C_CONFIG()                   \
-    {                                                       \
-        .dev_addr = ESP_LCD_TOUCH_IO_I2C_FT5x06_ADDRESS,    \
-        .scl_speed_hz = 100000,                             \
-        .control_phase_bytes = 1,                           \
-        .dc_bit_offset = 0,                                 \
-        .lcd_cmd_bits = 8,                                  \
-        .flags =                                            \
-        {                                                   \
-            .disable_control_phase = 1,                     \
-        }                                                   \
+#define ESP3233_LCD_ONBOARD_I2C_CONFIG()                        \
+    {                                                           \
+        .clk_source = I2C_CLK_SRC_DEFAULT,                      \
+        .i2c_port = LCD_I2C_NUM,                                \
+        .scl_io_num = LCD_TOUCH_SCL_GPIO_NUM,                   \
+        .sda_io_num = LCD_TOUCH_SDA_GPIO_NUM,                   \
+        .glitch_ignore_cnt = 7,                                 \
+        .flags.enable_internal_pullup = true,                   \
     }
 
 esp_err_t backlight_init(void);
