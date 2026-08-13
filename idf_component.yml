@@ -1,5 +1,5 @@
 name: esp32s3_lcd
-version: 0.2.1
+version: 0.3.0
 description: This component handles LCD initialization for 4D Systems' ESP32-S3 
   series of displays
 url: https://4dsystems.com.au/
