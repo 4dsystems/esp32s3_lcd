@@ -24,6 +24,7 @@
 
 #include "esp_lcd_touch_ft5x06.h"
 #include "esp_lcd_touch_gt911.h"
+#include "esp_io_expander_tca9554.h"
 
 #include "esp32s3_lcd.h"
 
@@ -600,6 +601,30 @@ esp_err_t esp32s3_lcd_touch_init(esp_lcd_touch_handle_t *tp) {
         goto err_bus;
     }
 
+#if defined(CONFIG_LCD_INTERFACE_RGB)
+    /* RGB boards route touch RST/INT through the TCA9554 IO expander
+       (RST -> P7, INT -> P6, per schematic) instead of native GPIOs.
+       Replicating the GT911/GT967 reset+address-select sequence here since
+       the driver's own reset() can't reach these pins (rst_gpio_num/
+       int_gpio_num are native GPIO numbers, not expander pins). */
+    esp_io_expander_handle_t io_expander = NULL;
+    ret = esp_io_expander_new_i2c_tca9554(i2c_bus, ESP_IO_EXPANDER_I2C_TCA9554A_ADDRESS_001, &io_expander);
+    if (ret != ESP_OK) {
+        goto err_io;
+    }
+
+    esp_io_expander_set_dir(io_expander, IO_EXPANDER_PIN_NUM_6 | IO_EXPANDER_PIN_NUM_7, IO_EXPANDER_OUTPUT);
+
+    esp_io_expander_set_level(io_expander, IO_EXPANDER_PIN_NUM_7, 0); /* RST low - assert reset */
+    vTaskDelay(pdMS_TO_TICKS(10));
+    esp_io_expander_set_level(io_expander, IO_EXPANDER_PIN_NUM_6, 0); /* INT low - selects 0x5D while RST is still low */
+    vTaskDelay(pdMS_TO_TICKS(1));
+    esp_io_expander_set_level(io_expander, IO_EXPANDER_PIN_NUM_7, 1); /* RST high - release reset, address is latched */
+    vTaskDelay(pdMS_TO_TICKS(100)); /* let the chip finish booting before any I2C read/write */
+
+    esp_io_expander_set_dir(io_expander, IO_EXPANDER_PIN_NUM_6, IO_EXPANDER_INPUT); /* release INT back to input - open-drain from the touch chip from here on */
+#endif
+
     /* Check which chip is on the bus before constructing anything, so we
        only ever attempt the driver that's actually going to succeed. */
     bool ft5x06_present = (i2c_master_probe(i2c_bus, ESP_LCD_TOUCH_IO_I2C_FT5x06_ADDRESS, 50) == ESP_OK);
@@ -646,9 +671,7 @@ esp_err_t esp32s3_lcd_touch_init(esp_lcd_touch_handle_t *tp) {
     }
 
     /* Not FT5x06 - assume GT967, driven via the GT911 driver (same
-       registers, same contact record layout - see esp_lcd_touch_gt911.h).
-       RST/INT are wired now, so the driver's reset sequence actively
-       selects this address on the chip - only one address to try. */
+       registers, same contact record layout - see esp_lcd_touch_gt911.h). */
     esp_lcd_panel_io_i2c_config_t gt967_io_config = ESP_LCD_TOUCH_IO_I2C_GT911_CONFIG();
     gt967_io_config.scl_speed_hz = 400000;
 
