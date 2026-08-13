@@ -600,17 +600,12 @@ esp_err_t esp32s3_lcd_touch_init(esp_lcd_touch_handle_t *tp) {
         goto err_bus;
     }
 
-    esp_lcd_panel_io_i2c_config_t io_config = ESP32S3_LCD_TOUCH_IO_I2C_CONFIG();
-    io_config.scl_speed_hz = 400000;
+    /* Check which chip is on the bus before constructing anything, so we
+       only ever attempt the driver that's actually going to succeed. */
+    bool ft5x06_present = (i2c_master_probe(i2c_bus, ESP_LCD_TOUCH_IO_I2C_FT5x06_ADDRESS, 50) == ESP_OK);
 
     esp_lcd_panel_io_handle_t io_handle = NULL;
-    ret = esp_lcd_new_panel_io_i2c(i2c_bus, &io_config, &io_handle);
-    if (ret != ESP_OK) {
-        goto err_io;
-    }
 
-    /* Touch panel configuration — no mirroring in driver;
-       Y-flip for 3.2" panels is handled in software in EwBspTouchGetEvents */
     esp_lcd_touch_config_t tp_cfg = {
 #if defined(LCD_TOUCH_SWAP_MAX_XY) && (LCD_TOUCH_SWAP_MAX_XY == 1)
         .x_max = LCD_TOUCH_AREA_MAX_Y,
@@ -632,48 +627,53 @@ esp_err_t esp32s3_lcd_touch_init(esp_lcd_touch_handle_t *tp) {
         },
     };
 
-    ret = esp_lcd_touch_new_i2c_ft5x06(io_handle, &tp_cfg, tp);
-    if (ret == ESP_OK) {
+    if (ft5x06_present) {
+        esp_lcd_panel_io_i2c_config_t io_config = ESP32S3_LCD_TOUCH_IO_I2C_CONFIG();
+        io_config.scl_speed_hz = 400000;
+
+        ret = esp_lcd_new_panel_io_i2c(i2c_bus, &io_config, &io_handle);
+        if (ret != ESP_OK) {
+            goto err_io;
+        }
+
+        ret = esp_lcd_touch_new_i2c_ft5x06(io_handle, &tp_cfg, tp);
+        if (ret != ESP_OK) {
+            esp_lcd_panel_io_del(io_handle);
+            goto err_io;
+        }
+
         return ESP_OK;
     }
 
-    /* Not an FT5x06 - fall back to GT967, driven via the GT911 driver
-       (same registers, same contact record layout - see
-       esp_lcd_touch_gt911.h). NOTE: with rst_gpio_num/int_gpio_num left
-       at -1 above, the GT911 driver's INT-pin address-selection sequence
-       does not run, so this only finds the chip if it is already sitting
-       at one of the two addresses tried below. */
-    esp_lcd_panel_io_del(io_handle);
+    /* Not FT5x06 - assume GT967, driven via the GT911 driver (same
+       registers, same contact record layout - see esp_lcd_touch_gt911.h).
+       RST/INT are wired now, so the driver's reset sequence actively
+       selects this address on the chip - only one address to try. */
+    esp_lcd_panel_io_i2c_config_t gt967_io_config = ESP_LCD_TOUCH_IO_I2C_GT911_CONFIG();
+    gt967_io_config.scl_speed_hz = 400000;
 
-    const uint8_t gt967_addrs[] = {
-        ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS,
-        ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS_BACKUP,
-    };
+    // 4D LCDs with GT967 in it will always have touch coordinates match the default orientation
+    tp_cfg.flags.mirror_x = 0;
+    tp_cfg.flags.mirror_y = 0;
+    tp_cfg.flags.swap_xy = 0;
 
-    for (size_t i = 0; i < sizeof(gt967_addrs) / sizeof(gt967_addrs[0]); i++) {
-        esp_lcd_panel_io_i2c_config_t gt967_io_config = ESP_LCD_TOUCH_IO_I2C_GT911_CONFIG();
-        gt967_io_config.dev_addr = gt967_addrs[i];
-        gt967_io_config.scl_speed_hz = 400000;
-
-        ret = esp_lcd_new_panel_io_i2c(i2c_bus, &gt967_io_config, &io_handle);
-        if (ret != ESP_OK) {
-            continue;
-        }
-
-        esp_lcd_touch_io_gt911_config_t gt911_addr_cfg = {
-            .dev_addr = gt967_addrs[i],
-        };
-        esp_lcd_touch_config_t gt967_tp_cfg = tp_cfg;
-        gt967_tp_cfg.driver_data = &gt911_addr_cfg;
-
-        ret = esp_lcd_touch_new_i2c_gt911(io_handle, &gt967_tp_cfg, tp);
-        if (ret == ESP_OK) {
-            return ESP_OK;
-        }
-        esp_lcd_panel_io_del(io_handle);
+    ret = esp_lcd_new_panel_io_i2c(i2c_bus, &gt967_io_config, &io_handle);
+    if (ret != ESP_OK) {
+        goto err_io;
     }
 
-    ret = ESP_ERR_NOT_FOUND;
+    esp_lcd_touch_io_gt911_config_t gt911_addr_cfg = {
+        .dev_addr = ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS,
+    };
+    tp_cfg.driver_data = &gt911_addr_cfg;
+
+    ret = esp_lcd_touch_new_i2c_gt911(io_handle, &tp_cfg, tp);
+    if (ret != ESP_OK) {
+        esp_lcd_panel_io_del(io_handle);
+        goto err_io;
+    }
+
+    return ESP_OK;
 
 err_io:
     i2c_del_master_bus(i2c_bus);
