@@ -53,9 +53,9 @@ extern "C" {
 #define LCD_BL_PWM_RESOLUTION   LEDC_TIMER_8_BIT  // 8-bit resolution (0-255)
 
 #if defined(CONFIG_ESP32S3_LCD_SPI2)
-#define LCD_HOST    SPI2_HOST
+#define LCD_SPI_HOST    SPI2_HOST
 #else // CONFIG_ESP32S3_LCD_SPI3
-#define LCD_HOST    SPI3_HOST
+#define LCD_SPI_HOST    SPI3_HOST
 #endif
 
 // Touch related parameters FT5446 series
