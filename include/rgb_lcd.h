@@ -17,12 +17,16 @@ extern "C" {
 // esp_lcd_rgb_panel_config_t's GPIO fields are gpio_num_t (not int) as of
 // IDF 6.0 - a plain integer literal in the designated initializer is a
 // compile error (esp-idf#12592), so these are GPIO_NUM_x, not bare numbers.
-#define LCD_BL_GPIO_NUM          GPIO_NUM_2     // backlight control (PWM)
-#define LCD_HSYNC_GPIO_NUM       GPIO_NUM_39
-#define LCD_VSYNC_GPIO_NUM       GPIO_NUM_41
-#define LCD_DE_GPIO_NUM          GPIO_NUM_40
-#define LCD_PCLK_GPIO_NUM        GPIO_NUM_42
-#define LCD_DISP_EN_GPIO_NUM     GPIO_NUM_NC    // DISP tied to VDD-3V3 on this board, no GPIO control
+#define LCD_BL_GPIO_NUM         GPIO_NUM_2     // backlight control (PWM)
+#define LCD_HSYNC_GPIO_NUM      GPIO_NUM_39
+#define LCD_VSYNC_GPIO_NUM      GPIO_NUM_41
+#define LCD_DE_GPIO_NUM         GPIO_NUM_40
+#define LCD_PCLK_GPIO_NUM       GPIO_NUM_42
+#define LCD_DISP_EN_GPIO_NUM    GPIO_NUM_NC    // DISP tied to VDD-3V3 on this board, no GPIO control
+#define LCD_TOUCH_SDA_GPIO_NUM  GPIO_NUM_17
+#define LCD_TOUCH_SCL_GPIO_NUM  GPIO_NUM_18
+#define LCD_TOUCH_INT_GPIO_NUM  GPIO_NUM_NC
+#define LCD_TOUCH_RST_GPIO_NUM  GPIO_NUM_NC
 
 #if !defined(CONFIG_ESP32S3_RGB_BYTE_SWAP)
 // Data bus order matches esp_lcd_rgb_panel_config_t.data_gpio_nums[0..15]

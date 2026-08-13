@@ -588,13 +588,8 @@ esp_err_t esp32s3_lcd_touch_init(esp_lcd_touch_handle_t *tp) {
     i2c_master_bus_config_t bus_config = {
         .clk_source = I2C_CLK_SRC_DEFAULT,
         .i2c_port = I2C_NUM_0,
-#if defined(CONFIG_LCD_INTERFACE_RGB) || defined(CONFIG_LCD_INTERFACE_QSPI)
-        .scl_io_num = GPIO_NUM_18,
-        .sda_io_num = GPIO_NUM_17,
-#else
-        .scl_io_num = GPIO_NUM_9,
-        .sda_io_num = GPIO_NUM_10,
-#endif
+        .scl_io_num = LCD_TOUCH_SCL_GPIO_NUM,
+        .sda_io_num = LCD_TOUCH_SDA_GPIO_NUM,
         .glitch_ignore_cnt = 7,
         .flags.enable_internal_pullup = true,
     };
@@ -624,8 +619,8 @@ esp_err_t esp32s3_lcd_touch_init(esp_lcd_touch_handle_t *tp) {
         .x_max = LCD_TOUCH_AREA_MAX_X,
         .y_max = LCD_TOUCH_AREA_MAX_Y,
 #endif
-        .rst_gpio_num = -1,
-        .int_gpio_num = -1,
+        .rst_gpio_num = LCD_TOUCH_RST_GPIO_NUM,
+        .int_gpio_num = LCD_TOUCH_INT_GPIO_NUM,
         .levels = {
             .reset = 0,
             .interrupt = 0,
