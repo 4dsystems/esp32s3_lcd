@@ -607,6 +607,7 @@ esp_err_t esp32s3_lcd_io_expander_init(i2c_master_bus_handle_t i2c_bus, esp_io_e
 }
 #endif
 
+#if !defined(CONFIG_ESP32S3_LCD_NOTOUCH)
 /* i2c_bus: caller's already-initialized bus, not created or deleted here.
    On CONFIG_LCD_INTERFACE_RGB boards, obtains the IO expander itself via
    esp32s3_lcd_io_expander_init() - creates it on first call, reuses it on
@@ -715,3 +716,4 @@ esp_err_t esp32s3_lcd_touch_init(i2c_master_bus_handle_t i2c_bus, esp_lcd_touch_
 
     return ESP_OK;
 }
+#endif 

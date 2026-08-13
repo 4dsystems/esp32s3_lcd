@@ -223,6 +223,10 @@ esp_err_t esp32s3_lcd_register_event_callbacks(const esp_lcd_panel_io_callbacks_
 esp_err_t esp32s3_lcd_io_expander_init(i2c_master_bus_handle_t i2c_bus, esp_io_expander_handle_t *out_io_expander);
 #endif
 
+#if !defined(CONFIG_ESP32S3_LCD_NOTOUCH)
+#if defined(CONFIG_ESP32S3_LCD_RTP)
+#error "Resistive touch modules not yet supported"
+#endif
 /**
  * @brief Bring up I2C touch in one call
  *
@@ -237,6 +241,7 @@ esp_err_t esp32s3_lcd_io_expander_init(i2c_master_bus_handle_t i2c_bus, esp_io_e
  * @return esp_err_t
  */
 esp_err_t esp32s3_lcd_touch_init(i2c_master_bus_handle_t i2c_bus, esp_lcd_touch_handle_t *tp);
+#endif
 
 #ifdef __cplusplus
 }

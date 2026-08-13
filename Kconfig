@@ -88,6 +88,25 @@ config ESP32S3_LCD_I2C1
       Select this if you wish to use I2C1 for onboard I2C components
 endchoice
 
+choice
+    prompt "Select touch type for your LCD module"
+
+config ESP32S3_LCD_CTP
+    bool "Capacitive"
+    help
+      Select this if you are using capacitive touch (CT or CT-CLB) LCD module
+
+config ESP32S3_LCD_RTP
+    bool "Resistive"
+    help
+      Select this if you are using resistive touch (T) LCD module
+
+config ESP32S3_LCD_NOTOUCH
+    bool "Non-touch"
+    help
+      Select this if you are using non-touch LCD module
+endchoice
+
 config LCD_INTERFACE_SPI
     bool
     default n
