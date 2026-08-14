@@ -1,14 +1,18 @@
-name: "esp32s3_4dlcd"
-version: "0.2.1"
-description: "This component handles LCD initialization for 4D Systems' ESP32-S3 series of displays"
-url: "https://4dsystems.com.au/"
-repository: "https://github.com/4dsystems/esp32s3_4dlcd"
-issues: "https://forum.4dsystems.com.au/node/80187"
-license: "Apache-2.0"
+name: esp32s3_lcd
+version: 0.3.0
+description: This component handles LCD initialization for 4D Systems' ESP32-S3 
+  series of displays
+url: https://4dsystems.com.au/
+repository: https://github.com/4dsystems/esp32s3_lcd
+issues: https://forum.4dsystems.com.au/node/80187
+license: Apache-2.0
 dependencies:
-  idf: ">=5.1"
+  idf: '>=5.1'
+  espressif/esp_lcd_touch_ft5x06: ^1.1.0~2
+  espressif/esp_lcd_touch_gt911: ^1.2.0~3
+  espressif/esp_io_expander_tca9554: ^2.0.3
 maintainers:
-  - Paul Clements <paul@4dsystems.com.au>
-  - Juniel Cruz <juniel@4dsystems.com.au>
+- Paul Clements <paul@4dsystems.com.au>
+- Juniel Cruz <juniel@4dsystems.com.au>
 targets:
-  - esp32s3
+- esp32s3
