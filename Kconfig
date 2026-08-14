@@ -1,62 +1,110 @@
-menu "4D Systems ESP32-S3 4D LCD Display Selection"
+menu "4D Systems ESP32-S3 Display Selection"
 
 choice
     prompt "Select your display series"
 
-config ESP32S3_4DLCD_24
+config ESP32S3_LCD_24
     bool "gen4-ESP32-24 Series"
     select LCD_INTERFACE_SPI
     help
       Select this if your 4D display is 2.4-inch
 
-config ESP32S3_4DLCD_28
+config ESP32S3_LCD_28
     select LCD_INTERFACE_SPI
     bool "gen4-ESP32-28 Series"
     help
       Select this if your 4D display is 2.8-inch
 
-config ESP32S3_4DLCD_32
+config ESP32S3_LCD_32
     bool "gen4-ESP32-32 Series"
     select LCD_INTERFACE_SPI
     help
       Select this if your 4D display is 3.2-inch
 
-config ESP32S3_4DLCD_35
+config ESP32S3_LCD_35
     bool "gen4-ESP32-35 Series"
     select LCD_INTERFACE_SPI
     help
       Select this if your 4D display is 3.5-inch
 
-config ESP32S3_4DLCD_43Q
+config ESP32S3_LCD_43Q
     bool "gen4-ESP32Q-43 Series"
     select LCD_INTERFACE_QSPI
     help
       Select this if your 4D display is 4.3-inch QSPI (480x272)
 
-# config ESP32S3_4DLCD_43
-#     bool "gen4-ESP32-43 Series"
-#     select LCD_INTERFACE_RGB
-#     help
-#       Select this if your 4D display is 4.3-inch RGB (800x480)
+config ESP32S3_LCD_43
+    bool "gen4-ESP32-43 Series"
+    select LCD_INTERFACE_RGB
+    help
+      Select this if your 4D display is 4.3-inch RGB (800x480)
 
-# config ESP32S3_4DLCD_50
-#     bool "gen4-ESP32-50 Series"
-#     select LCD_INTERFACE_RGB
-#     help
-#       Select this if your 4D display is 5-inch
+config ESP32S3_LCD_50
+    bool "gen4-ESP32-50 Series"
+    select LCD_INTERFACE_RGB
+    help
+      Select this if your 4D display is 5-inch
 
-# config ESP32S3_4DLCD_70
-#     bool "gen4-ESP32-70 Series"
-#     select LCD_INTERFACE_RGB
-#     help
-#       Select this if your 4D display is 7-inch
+config ESP32S3_LCD_70
+    bool "gen4-ESP32-70 Series"
+    select LCD_INTERFACE_RGB
+    help
+      Select this if your 4D display is 7-inch
 
-# config ESP32S3_4DLCD_90
-#     bool "ESP32-90 Series"
-#     select LCD_INTERFACE_RGB
-#     help
-#       Select this if your 4D display is 9-inch
+config ESP32S3_LCD_90
+    bool "ESP32-90 Series"
+    select LCD_INTERFACE_RGB
+    help
+      Select this if your 4D display is 9-inch
 
+endchoice
+
+choice
+    prompt "Select your SPI host to use with the LCD"
+    depends on ESP32S3_LCD_24 || ESP32S3_LCD_28 || ESP32S3_LCD_32 || ESP32S3_LCD_35 || ESP32S3_LCD_43Q
+
+config ESP32S3_LCD_SPI2
+    bool "SPI2"
+    help
+      Select this if you wish to use SPI2 with the SPI/QSPI LCD
+
+config ESP32S3_LCD_SPI3
+    bool "SPI3"
+    help
+      Select this if you wish to use SPI3 with the SPI/QSPI LCD
+endchoice
+
+choice
+    prompt "Select the I2C host you want to use for onboard components"
+
+config ESP32S3_LCD_I2C0
+    bool "I2C0"
+    help
+      Select this if you wish to use I2C0 for onboard I2C components
+
+config ESP32S3_LCD_I2C1
+    bool "I2C1"
+    help
+      Select this if you wish to use I2C1 for onboard I2C components
+endchoice
+
+choice
+    prompt "Select touch type for your LCD module"
+
+config ESP32S3_LCD_CTP
+    bool "Capacitive"
+    help
+      Select this if you are using capacitive touch (CT or CT-CLB) LCD module
+
+config ESP32S3_LCD_RTP
+    bool "Resistive"
+    help
+      Select this if you are using resistive touch (T) LCD module
+
+config ESP32S3_LCD_NOTOUCH
+    bool "Non-touch"
+    help
+      Select this if you are using non-touch LCD module
 endchoice
 
 config LCD_INTERFACE_SPI
@@ -70,5 +118,70 @@ config LCD_INTERFACE_QSPI
 config LCD_INTERFACE_RGB
     bool
     default n
+
+# Opt-out of the forced-PSRAM requirement. Only offered for the SPI and QSPI
+# displays. RGB displays all require PSRAM for their framebuffer size regardless
+# of this setting, so it's intentionally not selectable there.
+config ESP32S3_LCD_ALLOW_NOPSRAM
+    bool "Allow running without PSRAM (2.4/2.8/3.2/3.5 SPI and 4.3 QSPI only)"
+    depends on ESP32S3_LCD_24 || ESP32S3_LCD_28 || ESP32S3_LCD_32 || ESP32S3_LCD_35 || ESP32S3_LCD_43Q
+    default n
+    help
+      By default this component requires PSRAM regardless of the needs for a large
+      framebuffer. Enable this only if you have verified your application's framebuffers
+      and other allocations fit in internal RAM alongside WiFi/BT on SPI/QSPI displays.
+
+config ESP32S3_RGB_BYTE_SWAP
+    bool "Swap RGB565 data bus byte order"
+    depends on ESP32S3_LCD_43 || ESP32S3_LCD_50 || ESP32S3_LCD_70 || ESP32S3_LCD_90
+    default y
+    help
+      Re-orders the D0..D15 data bus GPIO assignment to swap the high and
+      low byte of each RGB565 pixel to match SPI/QSPI byte order requirement.
+      Disable this only if colors appear swapped or scrambled on your RGB panel.
+      Applies to the RGB display series only; not offered for SPI/QSPI variants.
+
+config ESP32S3_4D_DISPLAY_NAME
+    string
+    default "gen4-ESP32-24" if ESP32S3_LCD_24
+    default "gen4-ESP32-28" if ESP32S3_LCD_28
+    default "gen4-ESP32-32" if ESP32S3_LCD_32
+    default "gen4-ESP32-35" if ESP32S3_LCD_35
+    default "gen4-ESP32Q-43" if ESP32S3_LCD_43Q
+    default "gen4-ESP32-43" if ESP32S3_LCD_43
+    default "gen4-ESP32-50" if ESP32S3_LCD_50
+    default "gen4-ESP32-70" if ESP32S3_LCD_70
+    default "ESP32-90" if ESP32S3_LCD_90
+    help
+      Internal string identifier derived from the selected display series.
+      Not user-editable.
+
+config ESP32S3_4D_LCD_WIDTH
+    int
+    default 240 if ESP32S3_LCD_24
+    default 240 if ESP32S3_LCD_28
+    default 240 if ESP32S3_LCD_32
+    default 320 if ESP32S3_LCD_35
+    default 480 if ESP32S3_LCD_43Q
+    default 800 if ESP32S3_LCD_43
+    default 800 if ESP32S3_LCD_50
+    default 800 if ESP32S3_LCD_70
+    default 800 if ESP32S3_LCD_90
+    help
+      LCD horizontal resolution in pixels, derived from selected display series.
+
+config ESP32S3_4D_LCD_HEIGHT
+    int
+    default 320 if ESP32S3_LCD_24
+    default 320 if ESP32S3_LCD_28
+    default 320 if ESP32S3_LCD_32
+    default 480 if ESP32S3_LCD_35
+    default 272 if ESP32S3_LCD_43Q
+    default 480 if ESP32S3_LCD_43
+    default 480 if ESP32S3_LCD_50
+    default 480 if ESP32S3_LCD_70
+    default 480 if ESP32S3_LCD_90
+    help
+      LCD vertical resolution in pixels, derived from selected display series.
 
 endmenu

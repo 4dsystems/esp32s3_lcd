@@ -1,5 +1,7 @@
 #pragma once
 
+#include "driver/spi_master.h"
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
@@ -8,22 +10,16 @@ extern "C" {
 #define LCD_RST_ACTIVE_HIGH     0 // Reset pin active low
 
 // Resolution and bits per pixel for different 4D Systems ESP32-S3 LCD models
-#if defined(CONFIG_ESP32S3_4DLCD_35)
-#define LCD_WIDTH               320
-#define LCD_HEIGHT              480
+#if defined(CONFIG_ESP32S3_LCD_35)
 #define LCD_BITS_PER_PIXEL      18
-#elif defined(CONFIG_ESP32S3_4DLCD_43Q)
-#define LCD_WIDTH               480
-#define LCD_HEIGHT              272
+#elif defined(CONFIG_ESP32S3_LCD_43Q)
 #define LCD_BITS_PER_PIXEL      16
 #else
-#define LCD_WIDTH               240
-#define LCD_HEIGHT              320
 #define LCD_BITS_PER_PIXEL      16
 #endif
 
 // Pin definitions for SPI/QSPI, backlight, and reset
-#if defined(CONFIG_ESP32S3_4DLCD_43Q)
+#if defined(CONFIG_ESP32S3_LCD_43Q)
 #define LCD_BL_GPIO_NUM         2       // GPIO for backlight control
 #define LCD_RST_GPIO_NUM        8       // GPIO for LCD reset
 #define LCD_SPI_CS_GPIO_NUM     6       // GPIO for SPI CS
@@ -34,6 +30,10 @@ extern "C" {
 #define LCD_QSPI_DAT2_GPIO_NUM  4       // GPIO for QSPI DATA2
 #define LCD_QSPI_DAT3_GPIO_NUM  3       // GPIO for QSPI DATA3
 #define LCD_SPI_PCLK_MHZ        30      // QSPI clock frequency in MHz
+#define LCD_TOUCH_SDA_GPIO_NUM  GPIO_NUM_17
+#define LCD_TOUCH_SCL_GPIO_NUM  GPIO_NUM_18
+#define LCD_TOUCH_INT_GPIO_NUM  GPIO_NUM_42
+#define LCD_TOUCH_RST_GPIO_NUM  GPIO_NUM_41
 #else
 #define LCD_BL_GPIO_NUM         4       // GPIO for backlight control
 #define LCD_RST_GPIO_NUM        7       // GPIO for LCD reset
@@ -43,10 +43,36 @@ extern "C" {
 #define LCD_SPI_MISO_GPIO_NUM   12      // GPIO for SPI MISO
 #define LCD_SPI_MOSI_GPIO_NUM   13      // GPIO for SPI MOSI
 #define LCD_SPI_PCLK_MHZ        60      // SPI clock frequency in MHz
+#define LCD_TOUCH_SDA_GPIO_NUM  GPIO_NUM_10
+#define LCD_TOUCH_SCL_GPIO_NUM  GPIO_NUM_9
+#define LCD_TOUCH_INT_GPIO_NUM  GPIO_NUM_8
+#define LCD_TOUCH_RST_GPIO_NUM  GPIO_NUM_11
 #endif
 
 #define LCD_BL_PWM_FREQ_HZ      25000    // PWM frequency (25kHz)
 #define LCD_BL_PWM_RESOLUTION   LEDC_TIMER_8_BIT  // 8-bit resolution (0-255)
+
+#if defined(CONFIG_ESP32S3_LCD_SPI2)
+#define LCD_SPI_HOST    SPI2_HOST
+#else // CONFIG_ESP32S3_LCD_SPI3
+#define LCD_SPI_HOST    SPI3_HOST
+#endif
+
+// Touch related parameters FT5446 series
+#define LCD_TOUCH_SWAP_MAX_XY    0
+#if defined(CONFIG_ESP32S3_LCD_43Q)
+#define LCD_TOUCH_SWAP_XY        1 // only 4.3QSPI needs swapping
+#define LCD_TOUCH_MIRROR_X       0
+#define LCD_TOUCH_MIRROR_Y       0
+#elif defined(CONFIG_ESP32S3_LCD_35)
+#define LCD_TOUCH_SWAP_XY        0
+#define LCD_TOUCH_MIRROR_X       0
+#define LCD_TOUCH_MIRROR_Y       1
+#else // 2.4-inch and 3.2-inch
+#define LCD_TOUCH_SWAP_XY        0
+#define LCD_TOUCH_MIRROR_X       0
+#define LCD_TOUCH_MIRROR_Y       0
+#endif
 
 #if defined(__cplusplus)
 }
