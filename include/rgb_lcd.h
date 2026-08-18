@@ -116,48 +116,6 @@ extern "C" {
 
 #define LCD_BL_PWM_FREQ_HZ       25000    // PWM frequency (25kHz)
 
-/**
- * @brief RGB panel configuration structure for 4D Systems ESP32-S3-RGB series
- *
- * @note fb_in_psram is required: these boards use octal PSRAM for the frame
- *       buffer (800x480x2 = 768000 bytes), which does not fit in internal SRAM
- *       alongside WiFi/BT. CONFIG_SPIRAM must be enabled in sdkconfig.
- */
-#define ESP32S3_LCD_RGB_PANEL_CONFIG()                              \
-    {                                                                 \
-        .clk_src = LCD_CLK_SRC_PLL160M,                               \
-        .timings = {                                                  \
-            .pclk_hz = LCD_PCLK_HZ,                                   \
-            .h_res = CONFIG_ESP32S3_4D_LCD_WIDTH,                     \
-            .v_res = CONFIG_ESP32S3_4D_LCD_HEIGHT,                    \
-            .hsync_pulse_width = LCD_HSYNC_PULSE_WIDTH,               \
-            .hsync_back_porch = LCD_HSYNC_BACK_PORCH,                 \
-            .hsync_front_porch = LCD_HSYNC_FRONT_PORCH,               \
-            .vsync_pulse_width = LCD_VSYNC_PULSE_WIDTH,               \
-            .vsync_back_porch = LCD_VSYNC_BACK_PORCH,                 \
-            .vsync_front_porch = LCD_VSYNC_FRONT_PORCH,               \
-            .flags = {                                                \
-                .hsync_idle_low = LCD_HSYNC_IDLE_LOW,                 \
-                .vsync_idle_low = LCD_VSYNC_IDLE_LOW,                 \
-                .de_idle_high = LCD_DE_IDLE_HIGH,                     \
-                .pclk_active_neg = LCD_PCLK_ACTIVE_NEG,               \
-            },                                                        \
-        },                                                            \
-        .data_width = 16,                                             \
-        .num_fbs = 2,                                                 \
-        .bounce_buffer_size_px = 10 * CONFIG_ESP32S3_4D_LCD_WIDTH,    \
-        .dma_burst_size = 64,                                         \
-        .hsync_gpio_num = LCD_HSYNC_GPIO_NUM,                         \
-        .vsync_gpio_num = LCD_VSYNC_GPIO_NUM,                         \
-        .de_gpio_num = LCD_DE_GPIO_NUM,                               \
-        .pclk_gpio_num = LCD_PCLK_GPIO_NUM,                           \
-        .disp_gpio_num = LCD_DISP_EN_GPIO_NUM,                        \
-        .data_gpio_nums = LCD_DATA_GPIO_NUMS,                         \
-        .flags = {                                                    \
-            .fb_in_psram = true,                                      \
-        },                                                            \
-    }
-
 #if defined(__cplusplus)
 }
 #endif

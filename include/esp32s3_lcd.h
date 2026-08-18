@@ -100,13 +100,13 @@ typedef struct {
  */
 esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_panel_handle_t *ret_panel);
 
+#if defined(CONFIG_LCD_INTERFACE_SPI)
 /**
  * @brief LCD panel bus configuration structure
  *
  * @param[in] max_trans_sz Maximum transfer size in bytes
  *
  */
-#if defined(CONFIG_LCD_INTERFACE_SPI)
 #define ESP32S3_LCD_BUS_SPI_CONFIG(max_trans_sz)                \
     {                                                           \
         .sclk_io_num = LCD_SPI_SCLK_GPIO_NUM,                   \
@@ -117,6 +117,12 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
         .max_transfer_sz = max_trans_sz,                        \
     }
 #elif defined(CONFIG_LCD_INTERFACE_QSPI)
+/**
+ * @brief LCD panel bus configuration structure
+ *
+ * @param[in] max_trans_sz Maximum transfer size in bytes
+ *
+ */
 #define ESP32S3_LCD_BUS_SPI_CONFIG(max_trans_sz)                \
     {                                                           \
         .sclk_io_num = LCD_SPI_SCLK_GPIO_NUM,                   \
@@ -126,10 +132,51 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
         .data3_io_num = LCD_QSPI_DAT3_GPIO_NUM,                 \
         .max_transfer_sz = max_trans_sz,                        \
     }
-#else // CONFIG_ LCD_INTERFACE_RGB
-// TODO
+#else // CONFIG_LCD_INTERFACE_RGB
+/**
+ * @brief RGB panel configuration structure for 4D Systems ESP32-S3-RGB series
+ *
+ * @note fb_in_psram is required: these boards use octal PSRAM for the frame
+ *       buffer (800x480x2 = 768000 bytes), which does not fit in internal SRAM
+ *       alongside WiFi/BT. CONFIG_SPIRAM must be enabled in sdkconfig.
+ */
+#define ESP32S3_LCD_RGB_PANEL_CONFIG()                              \
+    {                                                                 \
+        .clk_src = LCD_CLK_SRC_PLL160M,                               \
+        .timings = {                                                  \
+            .pclk_hz = LCD_PCLK_HZ,                                   \
+            .h_res = CONFIG_ESP32S3_4D_LCD_WIDTH,                     \
+            .v_res = CONFIG_ESP32S3_4D_LCD_HEIGHT,                    \
+            .hsync_pulse_width = LCD_HSYNC_PULSE_WIDTH,               \
+            .hsync_back_porch = LCD_HSYNC_BACK_PORCH,                 \
+            .hsync_front_porch = LCD_HSYNC_FRONT_PORCH,               \
+            .vsync_pulse_width = LCD_VSYNC_PULSE_WIDTH,               \
+            .vsync_back_porch = LCD_VSYNC_BACK_PORCH,                 \
+            .vsync_front_porch = LCD_VSYNC_FRONT_PORCH,               \
+            .flags = {                                                \
+                .hsync_idle_low = LCD_HSYNC_IDLE_LOW,                 \
+                .vsync_idle_low = LCD_VSYNC_IDLE_LOW,                 \
+                .de_idle_high = LCD_DE_IDLE_HIGH,                     \
+                .pclk_active_neg = LCD_PCLK_ACTIVE_NEG,               \
+            },                                                        \
+        },                                                            \
+        .data_width = 16,                                             \
+        .num_fbs = 2,                                                 \
+        .bounce_buffer_size_px = 10 * CONFIG_ESP32S3_4D_LCD_WIDTH,    \
+        .dma_burst_size = 64,                                         \
+        .hsync_gpio_num = LCD_HSYNC_GPIO_NUM,                         \
+        .vsync_gpio_num = LCD_VSYNC_GPIO_NUM,                         \
+        .de_gpio_num = LCD_DE_GPIO_NUM,                               \
+        .pclk_gpio_num = LCD_PCLK_GPIO_NUM,                           \
+        .disp_gpio_num = LCD_DISP_EN_GPIO_NUM,                        \
+        .data_gpio_nums = LCD_DATA_GPIO_NUMS,                         \
+        .flags = {                                                    \
+            .fb_in_psram = true,                                      \
+        },                                                            \
+    }
 #endif // CONFIG_LCD_INTERFACE
 
+#if defined(CONFIG_LCD_INTERFACE_SPI)
 /**
  * @brief LCD panel IO configuration structure
  *
@@ -137,7 +184,6 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
  * @param[in] cb_ctx Callback function context
  *
  */
-#if defined(CONFIG_LCD_INTERFACE_SPI)
 #define ESP32S3_LCD_IO_SPI_CONFIG(callback, callback_ctx)       \
     {                                                           \
         .cs_gpio_num = LCD_SPI_CS_GPIO_NUM,                     \
@@ -151,6 +197,13 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
         .lcd_param_bits = 8,                                    \
     }
 #else // CONFIG_LCD_INTERFACE_QSPI
+/**
+ * @brief LCD panel IO configuration structure
+ *
+ * @param[in] cb Callback function when SPI transfer is done
+ * @param[in] cb_ctx Callback function context
+ *
+ */
 #define ESP32S3_LCD_IO_SPI_CONFIG(callback, callback_ctx)       \
     {                                                           \
         .cs_gpio_num = LCD_SPI_CS_GPIO_NUM,                     \
@@ -166,6 +219,10 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
     }
 #endif // CONFIG_LCD_INTERFACE
 
+/**
+ * @brief I2C bus configuration structure for onboard I2C components
+ *
+ */
 #define ESP3233_LCD_ONBOARD_I2C_CONFIG()                        \
     {                                                           \
         .clk_source = I2C_CLK_SRC_DEFAULT,                      \
@@ -176,7 +233,26 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
         .flags.enable_internal_pullup = true,                   \
     }
 
+/**
+ * @brief Initialize the LCD backlight PWM control hardware.
+ * 
+ * Configures the required LED channel / output pin to control the display's
+ * backlight LED driver. Automatically called at least once by esp32s3_lcd_backlight_set()
+ * if not used separately.
+ *
+ * @return ESP_OK on success, an error code if `ledc` channel configuration fails.
+ */
 esp_err_t esp32s3_lcd_backlight_init(void);
+
+/**
+ * @brief Set the LCD backlight brightness level.
+ * 
+ * Applies a new duty cycle to the initialized backlight hardware. 
+ * The valid range is 0 to 255
+ *
+ * @param[in] brightness Desired brightness level.
+ * @return ESP_OK on success, an error code if `ledc` fails to set or update duty cycle
+ */
 esp_err_t esp32s3_lcd_backlight_set(uint8_t brightness);
 
 /**

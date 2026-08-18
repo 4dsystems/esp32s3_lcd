@@ -8,6 +8,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * @file esp32s3_lcd.c
+ * @brief Platform-specific initialization wrappers for 4D Systems ESP32-S3 LCD & Touch subsystems.
+ * 
+ * Initialization order recommendation:
+ * 1. Configure I2C bus (for touch and onboard components)
+ * 2. esp32s3_lcd_full_init()    -> creates panel handle for drawing
+ * 3. esp32s3_lcd_touch_init()   -> prepares touch input events
+ * 4. esp32s3_lcd_backlight_init() + set() -> enable display visibility
+ */
+
 #include <stdlib.h>
 #include <sys/cdefs.h>
 #include "freertos/FreeRTOS.h"
@@ -29,6 +40,8 @@
 #include "esp32s3_lcd.h"
 
 static const char *TAG = "esp32s3_lcd";
+
+static bool backlight_init = false;
 
 esp_lcd_panel_handle_t panel_handle = NULL;
 
@@ -490,7 +503,8 @@ static esp_err_t esp32s3_lcd_disp_on_off(esp_lcd_panel_t *panel, bool on_off)
 
 esp_err_t esp32s3_lcd_backlight_init(void)
 {
-    // Configure timer with 8-bit resolution
+    if (backlight_init) return ESP_OK;
+
     ledc_timer_config_t ledc_timer = {
         .speed_mode       = LEDC_LOW_SPEED_MODE,
         .duty_resolution  = LEDC_TIMER_8_BIT,
@@ -500,7 +514,6 @@ esp_err_t esp32s3_lcd_backlight_init(void)
     };
     ESP_RETURN_ON_ERROR(ledc_timer_config(&ledc_timer), TAG, "backlight timer configuration failed");
 
-    // Configure channel
     ledc_channel_config_t ledc_channel = {
         .speed_mode     = LEDC_LOW_SPEED_MODE,
         .channel        = LEDC_CHANNEL_0,
@@ -511,12 +524,15 @@ esp_err_t esp32s3_lcd_backlight_init(void)
         .hpoint         = 0
     };
     ESP_RETURN_ON_ERROR(ledc_channel_config(&ledc_channel), TAG, "backlight channel configuration failed");
+
+    backlight_init = true;
+
     return ESP_OK;
 }
 
-// Set brightness (0-255)
 esp_err_t esp32s3_lcd_backlight_set(uint8_t brightness)
 {
+    if (!backlight_init) esp32s3_lcd_backlight_init();
     ESP_RETURN_ON_ERROR(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, brightness), TAG, "set backlight duty failed");
     ESP_RETURN_ON_ERROR(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0), TAG, "update backlight duty failed");
     return ESP_OK;
