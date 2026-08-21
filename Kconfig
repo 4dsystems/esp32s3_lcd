@@ -65,6 +65,13 @@ config ESP32S3_BACKLIGHT_AUTO_ON
     help
       Select this if you want to automatically turn on backlight on LCD initialization
 
+config ESP32S3_35_SWAP_BYTE_ORDER
+    bool "Swap 3.5-inch color byte order (from RGB to BGR)"
+    depends on ESP32S3_LCD_35
+    default n
+    help
+      Select this if you want to use BGR color for 3.5-inch module
+
 choice
     prompt "Select your SPI host to use with the LCD"
     depends on ESP32S3_LCD_24 || ESP32S3_LCD_28 || ESP32S3_LCD_32 || ESP32S3_LCD_35 || ESP32S3_LCD_43Q

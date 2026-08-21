@@ -116,10 +116,10 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
     ESP_GOTO_ON_ERROR(gpio_config(&io_conf), err, TAG, "configure GPIO for RST line failed");
 #endif
 
-#if (LCD_COLOR_ORDER == LCD_RGB_ELEMENT_ORDER_RGB)
-    esp32s3_lcd->madctl_val = 0;
-#elif (LCD_COLOR_ORDER == LCD_RGB_ELEMENT_ORDER_BGR)
+#if defined(CONFIG_ESP32S3_35_SWAP_BYTE_ORDER) || (LCD_COLOR_ORDER == LCD_RGB_ELEMENT_ORDER_BGR)
     esp32s3_lcd->madctl_val |= LCD_CMD_BGR_BIT;
+#elif (LCD_COLOR_ORDER == LCD_RGB_ELEMENT_ORDER_RGB)
+    esp32s3_lcd->madctl_val = 0;
 #else
     ESP_GOTO_ON_FALSE(false, ESP_ERR_NOT_SUPPORTED, err, TAG, "unsupported rgb endian");
 #endif
