@@ -117,7 +117,7 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
     ESP_GOTO_ON_ERROR(gpio_config(&io_conf), err, TAG, "configure GPIO for RST line failed");
 #endif
 
-#if defined(CONFIG_ESP32S3_35_SWAP_BYTE_ORDER)
+#if defined(CONFIG_ESP32S3_LCD_35) && defined(CONFIG_ESP32S3_35_SWAP_BYTE_ORDER)
     esp32s3_lcd->madctl_val &= ~LCD_CMD_BGR_BIT; // oddly, requires the unsetting to make it BGR
 #else
 
@@ -382,7 +382,7 @@ static esp_err_t esp32s3_lcd_init(esp_lcd_panel_t *panel)
             is_cmd_overwritten = true;
             esp32s3_lcd->madctl_val = ((uint8_t *)init_cmds[i].data)[0];
 
-#if defined(CONFIG_ESP32S3_35_SWAP_BYTE_ORDER)
+#if defined(CONFIG_ESP32S3_LCD_35) && defined(CONFIG_ESP32S3_35_SWAP_BYTE_ORDER)
     esp32s3_lcd->madctl_val &= ~LCD_CMD_BGR_BIT; // oddly, requires the unsetting to make it BGR
 #else
 
@@ -590,7 +590,7 @@ esp_err_t esp32s3_lcd_full_init(esp_lcd_panel_handle_t *ret_panel)
     ESP_GOTO_ON_ERROR(esp_lcd_panel_reset(panel_handle), err, TAG, "panel reset failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_init(panel_handle), err, TAG, "panel init failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_disp_on_off(panel_handle, true), err, TAG, "panel display on failed");
-#if defined(CONFIG_ESP32S3_35_SWAP_BYTE_ORDER)
+#if defined(CONFIG_ESP32S3_LCD_35) && defined(CONFIG_ESP32S3_35_SWAP_BYTE_ORDER)
     // oddly, 3.5-inch needs this to reflect changes, or running mirror or similar commands after full init
     ESP_GOTO_ON_ERROR(esp32s3_lcd_reset_madctl(panel_handle), err, TAG, "resending madctl config failed");
 #endif
