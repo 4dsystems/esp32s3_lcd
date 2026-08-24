@@ -137,16 +137,23 @@ config LCD_INTERFACE_RGB
 # of this setting, so it's intentionally not selectable there.
 config ESP32S3_LCD_ALLOW_NOPSRAM
     bool "Allow running without PSRAM (2.4/2.8/3.2/3.5 SPI and 4.3 QSPI only)"
-    depends on ESP32S3_LCD_24 || ESP32S3_LCD_28 || ESP32S3_LCD_32 || ESP32S3_LCD_35 || ESP32S3_LCD_43Q
+    depends on LCD_INTERFACE_SPI || LCD_INTERFACE_QSPI
     default n
     help
       By default this component requires PSRAM regardless of the needs for a large
       framebuffer. Enable this only if you have verified your application's framebuffers
       and other allocations fit in internal RAM alongside WiFi/BT on SPI/QSPI displays.
 
+config ESP32S3_RGB_BB_LINES
+    int "Size of bounce buffer in lines of pixels"
+    depends on LCD_INTERFACE_RGB
+    default 10
+    help
+      Enter the bounce buffer size in lines of pixels. Set to 0 to disable bounce buffer
+
 config ESP32S3_RGB_BYTE_SWAP
     bool "Swap RGB565 data bus byte order"
-    depends on ESP32S3_LCD_43 || ESP32S3_LCD_50 || ESP32S3_LCD_70 || ESP32S3_LCD_90
+    depends on LCD_INTERFACE_RGB
     default y
     help
       Re-orders the D0..D15 data bus GPIO assignment to swap the high and

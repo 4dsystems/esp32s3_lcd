@@ -140,7 +140,7 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
  *       buffer (800x480x2 = 768000 bytes), which does not fit in internal SRAM
  *       alongside WiFi/BT. CONFIG_SPIRAM must be enabled in sdkconfig.
  */
-#define ESP32S3_LCD_RGB_PANEL_CONFIG()                              \
+#define ESP32S3_LCD_RGB_PANEL_CONFIG()                                \
     {                                                                 \
         .clk_src = LCD_CLK_SRC_PLL160M,                               \
         .timings = {                                                  \
@@ -162,7 +162,7 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
         },                                                            \
         .data_width = 16,                                             \
         .num_fbs = 2,                                                 \
-        .bounce_buffer_size_px = 10 * CONFIG_ESP32S3_4D_LCD_WIDTH,    \
+        .bounce_buffer_size_px = CONFIG_ESP32S3_RGB_BB_LINES * CONFIG_ESP32S3_4D_LCD_WIDTH, \
         .dma_burst_size = 64,                                         \
         .hsync_gpio_num = LCD_HSYNC_GPIO_NUM,                         \
         .vsync_gpio_num = LCD_VSYNC_GPIO_NUM,                         \
