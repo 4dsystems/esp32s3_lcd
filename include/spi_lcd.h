@@ -11,11 +11,22 @@ extern "C" {
 // Resolution and bits per pixel for different 4D Systems ESP32-S3 LCD models
 #if defined(CONFIG_ESP32S3_LCD_35)
 #define LCD_BITS_PER_PIXEL      18
-#elif defined(CONFIG_ESP32S3_LCD_43Q)
-#define LCD_BITS_PER_PIXEL      16
 #else
 #define LCD_BITS_PER_PIXEL      16
 #endif
+
+// LCD default display orientation, with no mirroring
+// useful when graphics libraries like esp_lvgl_port reinits the swapping and mirroring
+#if defined(CONFIG_ESP32S3_LCD_43Q)
+#define LCD_DISP_SWAP_XY        0
+#define LCD_DISP_MIRROR_X       0
+#define LCD_DISP_MIRROR_Y       0
+#else // 2.4-inch to 3.5-inch
+#define LCD_DISP_SWAP_XY        0
+#define LCD_DISP_MIRROR_X       1
+#define LCD_DISP_MIRROR_Y       0
+#endif
+
 
 // Pin definitions for SPI/QSPI, backlight, and reset
 #if defined(CONFIG_ESP32S3_LCD_43Q)

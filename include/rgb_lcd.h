@@ -13,6 +13,13 @@ extern "C" {
 // resolution - only the physical size/density and timing parameters differ.
 #define LCD_BITS_PER_PIXEL      16      // RGB565 over the 16-bit parallel bus
 
+// LCD default display orientation, with no mirroring
+// useful when graphics libraries like esp_lvgl_port reinits the swapping and mirroring
+// for RGB LCDs, there's no mirroring or swapping at all
+#define LCD_DISP_SWAP_XY        0
+#define LCD_DISP_MIRROR_X       0
+#define LCD_DISP_MIRROR_Y       0
+
 // Pin definitions, gen4-ESP32-RGB-REV1.1
 #define LCD_BL_GPIO_NUM         GPIO_NUM_2     // backlight control (PWM)
 #define LCD_HSYNC_GPIO_NUM      GPIO_NUM_39
