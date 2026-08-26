@@ -6,7 +6,6 @@
 extern "C" {
 #endif
 
-#define LCD_COLOR_ORDER         LCD_RGB_ELEMENT_ORDER_RGB // Default color order for 4D Systems displays
 #define LCD_RST_ACTIVE_HIGH     0 // Reset pin active low
 
 // Resolution and bits per pixel for different 4D Systems ESP32-S3 LCD models

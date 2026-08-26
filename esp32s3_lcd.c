@@ -119,16 +119,6 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
 
 #if defined(CONFIG_ESP32S3_LCD_35) && defined(CONFIG_ESP32S3_35_SWAP_BYTE_ORDER)
     esp32s3_lcd->madctl_val &= ~LCD_CMD_BGR_BIT; // oddly, requires the unsetting to make it BGR
-#else
-
-#if (LCD_COLOR_ORDER == LCD_RGB_ELEMENT_ORDER_BGR)
-    esp32s3_lcd->madctl_val |= LCD_CMD_BGR_BIT;
-#elif (LCD_COLOR_ORDER == LCD_RGB_ELEMENT_ORDER_RGB)
-    esp32s3_lcd->madctl_val &= ~LCD_CMD_BGR_BIT;
-#else
-    ESP_GOTO_ON_FALSE(false, ESP_ERR_NOT_SUPPORTED, err, TAG, "unsupported rgb endian");
-#endif
-
 #endif
 
 #if (LCD_BITS_PER_PIXEL == 16)
@@ -384,16 +374,6 @@ static esp_err_t esp32s3_lcd_init(esp_lcd_panel_t *panel)
 
 #if defined(CONFIG_ESP32S3_LCD_35) && defined(CONFIG_ESP32S3_35_SWAP_BYTE_ORDER)
     esp32s3_lcd->madctl_val &= ~LCD_CMD_BGR_BIT; // oddly, requires the unsetting to make it BGR
-#else
-
-#if (LCD_COLOR_ORDER == LCD_RGB_ELEMENT_ORDER_BGR)
-    esp32s3_lcd->madctl_val |= LCD_CMD_BGR_BIT;
-#elif (LCD_COLOR_ORDER == LCD_RGB_ELEMENT_ORDER_RGB)
-    esp32s3_lcd->madctl_val &= ~LCD_CMD_BGR_BIT;
-#else
-    ESP_GOTO_ON_FALSE(false, ESP_ERR_NOT_SUPPORTED, err, TAG, "unsupported rgb endian");
-#endif
-
 #endif
             break;
         case LCD_CMD_COLMOD:
