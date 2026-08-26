@@ -62,11 +62,11 @@ extern "C" {
 #define LCD_TOUCH_SWAP_XY        1 // only 4.3QSPI needs swapping
 #define LCD_TOUCH_MIRROR_X       0
 #define LCD_TOUCH_MIRROR_Y       0
-#elif defined(CONFIG_ESP32S3_LCD_35)
+#elif defined(CONFIG_ESP32S3_LCD_35) || defined(CONFIG_ESP32S3_LCD_32)
 #define LCD_TOUCH_SWAP_XY        0
 #define LCD_TOUCH_MIRROR_X       0
 #define LCD_TOUCH_MIRROR_Y       1
-#else // 2.4-inch and 3.2-inch
+#else // 2.4-inch and 2.8-inch
 #define LCD_TOUCH_SWAP_XY        0
 #define LCD_TOUCH_MIRROR_X       0
 #define LCD_TOUCH_MIRROR_Y       0
