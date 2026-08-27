@@ -58,7 +58,6 @@ static esp_err_t esp32s3_lcd_mirror(esp_lcd_panel_t *panel, bool mirror_x, bool 
 static esp_err_t esp32s3_lcd_swap_xy(esp_lcd_panel_t *panel, bool swap_axes);
 static esp_err_t esp32s3_lcd_set_gap(esp_lcd_panel_t *panel, int x_gap, int y_gap);
 static esp_err_t esp32s3_lcd_disp_on_off(esp_lcd_panel_t *panel, bool off);
-static esp_err_t esp32s3_lcd_reset_madctl(esp_lcd_panel_t *panel);
 
 #if defined(CONFIG_LCD_INTERFACE_QSPI)
 #define LCD_OPCODE_WRITE_CMD        (0x02ULL)
@@ -115,10 +114,6 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
     io_conf.mode = GPIO_MODE_OUTPUT;
     io_conf.pin_bit_mask = 1ULL << LCD_RST_GPIO_NUM;
     ESP_GOTO_ON_ERROR(gpio_config(&io_conf), err, TAG, "configure GPIO for RST line failed");
-#endif
-
-#if defined(CONFIG_ESP32S3_LCD_35) && defined(CONFIG_ESP32S3_35_SWAP_BYTE_ORDER)
-    esp32s3_lcd->madctl_val &= ~LCD_CMD_BGR_BIT; // oddly, requires the unsetting to make it BGR
 #endif
 
 #if (LCD_BITS_PER_PIXEL == 16)
@@ -373,7 +368,7 @@ static esp_err_t esp32s3_lcd_init(esp_lcd_panel_t *panel)
             esp32s3_lcd->madctl_val = ((uint8_t *)init_cmds[i].data)[0];
 
 #if defined(CONFIG_ESP32S3_LCD_35) && defined(CONFIG_ESP32S3_35_SWAP_BYTE_ORDER)
-    esp32s3_lcd->madctl_val &= ~LCD_CMD_BGR_BIT; // oddly, requires the unsetting to make it BGR
+            esp32s3_lcd->madctl_val &= ~LCD_CMD_BGR_BIT;
 #endif
             break;
         case LCD_CMD_COLMOD:
@@ -440,16 +435,6 @@ static esp_err_t esp32s3_lcd_invert_color(esp_lcd_panel_t *panel, bool invert_co
         command = LCD_CMD_INVOFF;
     }
     ESP_RETURN_ON_ERROR(tx_param(io, command, NULL, 0), TAG, "send command failed");
-    return ESP_OK;
-}
-
-static esp_err_t esp32s3_lcd_reset_madctl(esp_lcd_panel_t *panel)
-{
-    esp32s3_lcd_panel_t *esp32s3_lcd = __containerof(panel, esp32s3_lcd_panel_t, base);
-    esp_lcd_panel_io_handle_t io = esp32s3_lcd->io;
-    ESP_RETURN_ON_ERROR(tx_param(io, LCD_CMD_MADCTL, (uint8_t[]) {
-        esp32s3_lcd->madctl_val
-    }, 1), TAG, "send command failed");
     return ESP_OK;
 }
 
@@ -570,10 +555,6 @@ esp_err_t esp32s3_lcd_full_init(esp_lcd_panel_handle_t *ret_panel)
     ESP_GOTO_ON_ERROR(esp_lcd_panel_reset(panel_handle), err, TAG, "panel reset failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_init(panel_handle), err, TAG, "panel init failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_disp_on_off(panel_handle, true), err, TAG, "panel display on failed");
-#if defined(CONFIG_ESP32S3_LCD_35) && defined(CONFIG_ESP32S3_35_SWAP_BYTE_ORDER)
-    // oddly, 3.5-inch needs this to reflect changes, or running mirror or similar commands after full init
-    ESP_GOTO_ON_ERROR(esp32s3_lcd_reset_madctl(panel_handle), err, TAG, "resending madctl config failed");
-#endif
 #else
     // RGB panels are driven directly by the ESP-IDF esp_lcd_rgb driver over a parallel
     // DMA-refreshed bus - there's no vendor init-command sequence and no dedicated reset
