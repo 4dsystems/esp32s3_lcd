@@ -176,6 +176,24 @@ config ESP32S3_4D_DISPLAY_NAME
       Internal string identifier derived from the selected display series.
       Not user-editable.
 
+      
+config ESP32S3_4D_LCD_DPI
+    int
+    default 166 if ESP32S3_LCD_24
+    default 141 if ESP32S3_LCD_28
+    default 127 if ESP32S3_LCD_32
+    default 166 if ESP32S3_LCD_35
+    default 128 if ESP32S3_LCD_43Q
+    # 4.3-inch RGB is 213 H-DPI, 226 V-DPI, using 217 as diagonal DPI
+    default 217 if ESP32S3_LCD_43
+    default 183 if ESP32S3_LCD_50
+    # 7-inch is 132 H-DPI, 142 V-DPI, using 137 as diagonal DPI
+    default 137 if ESP32S3_LCD_70
+    # 9-inch is 103 H-DPI, 109 V-DPI, using 104 as diagonal DPI
+    default 104 if ESP32S3_LCD_90
+    help
+      LCD's actual pixel density
+
 config ESP32S3_4D_LCD_WIDTH
     int
     default 240 if ESP32S3_LCD_24
