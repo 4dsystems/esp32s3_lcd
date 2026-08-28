@@ -161,7 +161,7 @@ esp_err_t esp_lcd_new_esp32s3_lcd(const esp_lcd_panel_io_handle_t io, esp_lcd_pa
             },                                                        \
         },                                                            \
         .data_width = 16,                                             \
-        .num_fbs = 2,                                                 \
+        .num_fbs = CONFIG_ESP32S3_RGB_NUM_FBS,                        \
         .bounce_buffer_size_px = CONFIG_ESP32S3_RGB_BB_LINES * CONFIG_ESP32S3_4D_LCD_WIDTH, \
         .dma_burst_size = 64,                                         \
         .hsync_gpio_num = LCD_HSYNC_GPIO_NUM,                         \

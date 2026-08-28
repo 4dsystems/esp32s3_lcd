@@ -144,12 +144,28 @@ config ESP32S3_LCD_ALLOW_NOPSRAM
       framebuffer. Enable this only if you have verified your application's framebuffers
       and other allocations fit in internal RAM alongside WiFi/BT on SPI/QSPI displays.
 
+config ESP32S3_LCD_RGB_DOUBLE_BUFFER
+    bool "Use double framebuffer"
+    depends on LCD_INTERFACE_RGB
+    default y
+    help
+      Use two framebuffers for tear-free rendering. Requires more PSRAM.
+      Disable to use a single framebuffer, optionally paired with a
+      bounce buffer (see ESP32S3_RGB_BB_LINES).
+
 config ESP32S3_RGB_BB_LINES
     int "Size of bounce buffer in lines of pixels"
     depends on LCD_INTERFACE_RGB
     default 10
     help
       Enter the bounce buffer size in lines of pixels. Set to 0 to disable bounce buffer
+
+config ESP32S3_RGB_NUM_FBS
+    int
+    default 2 if ESP32S3_LCD_RGB_DOUBLE_BUFFER
+    default 1 if !ESP32S3_LCD_RGB_DOUBLE_BUFFER
+    help
+      Number of framebuffers to use for RGB LCD
 
 config ESP32S3_RGB_BYTE_SWAP
     bool "Swap RGB565 data bus byte order"
